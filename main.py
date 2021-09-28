@@ -121,12 +121,12 @@ def mp(L,M,K):
   # Y = A@X + noise
   # SNRs = [10,15]
   SNR = 10
-  Nsamp = 10
+  Nsamp = 1
   
   # print('SNR=', 10*np.log10(np.linalg.norm(A@X)**2/np.linalg.norm(noise)**2))
   res = []
-  Nlam1 = 3
-  Nlam2 = 10
+  Nlam1 = 2
+  Nlam2 = 2
   lams1 = np.logspace(-3,-1, Nlam1)
   lams2 = np.logspace(-3,0, Nlam2)
 
@@ -157,29 +157,44 @@ def mp(L,M,K):
     NMSE[i,j,nsamp] = np.linalg.norm(e['Xhat']-Zall[nsamp]@p.Phi.T)**2/np.linalg.norm(Zall[nsamp]@p.Phi.T)**2
   NMSE = 10*np.log10(np.mean(NMSE, axis=-1))
 
-  plt.figure()
+  return NMSE, lams1, lams2, (L,M,K)
+
+def plot_nmse(ax, NMSE, lams1, lams2, LMK):
+  L,M,K = LMK
   for nmse in NMSE:
-    plt.plot(lams2, nmse)
-  plt.legend([str(l) for l in lams1])
-  plt.title('L, M, K = ' + str((L,M,K)))
-  
+    ax.plot(lams2, nmse)
+  ax.legend([str(l) for l in lams1])
+  ax.set_title('L, M, K = ' + str((L,M,K)))
+
 if __name__ == '__main__':
   # f2()
   M = 8
   K = 3
+  figL, axL = plt.subplots(5,1)
+  i = 0
   for L in [4,8,12,16,20]:
   # for L in [12]:
-    mp(L, M, K)
+    NMSE, lams1, lams2, LMK = mp(L, M, K)
+    plot_nmse(axL[i], NMSE, lams1, lams2, LMK)
+    i += 1
   
   L = 12
   K = 3
+  i = 0
+  figM, axM = plt.subplots(4,1)
   for M in [4,8,12,16]:
-    mp(L, M, K)
+    NMSE, lams1, lams2, LMK = mp(L, M, K)
+    plot_nmse(axM[i], NMSE, lams1, lams2, LMK)
+    i += 1
 
   M = 8
   L = 12
+  i = 0
+  figK, axK = plt.subplots(6,1)
   for K in [3,4,5,6,7,8]:
-    mp(L, M, K)
+    NMSE, lams1, lams2, LMK = mp(L, M, K)
+    plot_nmse(axK[i], NMSE, lams1, lams2, LMK)
+    i += 1
 
   plt.show()
       # print(10*np.log10(np.linalg.norm(Xcvx.value-X)**2/np.linalg.norm(X)**2))
