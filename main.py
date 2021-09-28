@@ -121,7 +121,7 @@ def mp(L,M,K):
   # Y = A@X + noise
   # SNRs = [10,15]
   SNR = 10
-  Nsamp = 5
+  Nsamp = 10
   
   # print('SNR=', 10*np.log10(np.linalg.norm(A@X)**2/np.linalg.norm(noise)**2))
   res = []
