@@ -134,10 +134,15 @@ def mp(L,M,K):
   
   # print('SNR=', 10*np.log10(np.linalg.norm(A@X)**2/np.linalg.norm(noise)**2))
   res = []
-  Nlam1 = 3
-  Nlam2 = 10
-  lams1 = np.logspace(-3,-1, Nlam1)
-  lams2 = np.logspace(-4,0, Nlam2)
+  # Nlam1 = 3
+  # Nlam2 = 10
+  # lams1 = np.logspace(-3,-1, Nlam1)
+  # lams2 = np.logspace(-4,0, Nlam2)
+
+  Nlam1 = 1
+  Nlam2 = 1
+  lams1 = [0.1]
+  lams2 = [0.1]
 
   p = problem(*(N,L,M,P,K,(M,1),channel_sparsity))
 
@@ -208,4 +213,5 @@ def lam_tradeoff():
   plt.show()
 
 if __name__ == '__main__':
-  mp(L=12,M=8,K=3)
+  NMSE, lams1, lams2, LMK = mp(L=12,M=8,K=3)
+  print(NMSE)
