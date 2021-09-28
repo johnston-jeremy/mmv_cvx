@@ -125,10 +125,10 @@ def mp(L,M,K):
   
   # print('SNR=', 10*np.log10(np.linalg.norm(A@X)**2/np.linalg.norm(noise)**2))
   res = []
-  Nlam1 = 2
-  Nlam2 = 2
+  Nlam1 = 3
+  Nlam2 = 10
   lams1 = np.logspace(-3,-1, Nlam1)
-  lams2 = np.logspace(-3,0, Nlam2)
+  lams2 = np.logspace(-4,0, Nlam2)
 
   p = problem(*(N,L,M,P,K,(M,1),channel_sparsity))
 
@@ -163,6 +163,7 @@ def plot_nmse(ax, NMSE, lams1, lams2, LMK):
   L,M,K = LMK
   for nmse in NMSE:
     ax.plot(lams2, nmse)
+  ax.set_xscale('log')
   ax.legend([str(l) for l in lams1])
   ax.set_title('L, M, K = ' + str((L,M,K)))
 
