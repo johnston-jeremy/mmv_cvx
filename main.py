@@ -168,7 +168,8 @@ def mp(L,M,K):
   NMSE = np.zeros((len(lams1),len(lams2),Nsamp))
   for e in E:
     i,j,nsamp = e['ind']
-    NMSE[i,j,nsamp] = np.linalg.norm(e['Xhat']-Xall[nsamp])**2/np.linalg.norm(Xall[nsamp])**2
+    # NMSE[i,j,nsamp] = np.linalg.norm(e['Xhat']-Xall[nsamp])**2/np.linalg.norm(Xall[nsamp])**2
+    NMSE[i,j,nsamp] = np.linalg.norm(e['Zhat']@p.Phi.T-Xall[nsamp])**2/np.linalg.norm(Xall[nsamp])**2
   NMSE = 10*np.log10(np.mean(NMSE, axis=-1))
 
   return NMSE, lams1, lams2, (L,M,K)
