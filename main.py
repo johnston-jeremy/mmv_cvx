@@ -46,7 +46,7 @@ def worker(inputs):
   E, p, Yall, lams1,lams2, ind = inputs
   i, j, nsamp = ind
   Y = Yall[nsamp]
-  lam1, lam2 = lams1[ind[0]], lams2[ind[1]]
+  lam1, lam2 = lams1[i], lams2[j]
 
   Phi = cp.Constant(p.Phi.real) + 1j*cp.Constant(p.Phi.imag)
   Zcvx = cp.Variable(shape=(p.N,p.Ng),complex=True)
@@ -125,7 +125,7 @@ def mp(L,M,K):
   
   # print('SNR=', 10*np.log10(np.linalg.norm(A@X)**2/np.linalg.norm(noise)**2))
   res = []
-  Nlam1 = 10
+  Nlam1 = 5
   Nlam2 = 10
   lams1 = np.logspace(-3,-1, Nlam1)
   lams2 = np.logspace(-3,-1, Nlam2)
@@ -160,8 +160,8 @@ def mp(L,M,K):
   plt.figure()
   for nmse in NMSE:
     plt.plot(lams2, nmse)
-  plt.legend([str(l) for l in lams2])
-  plt.title('L =', L)
+  plt.legend([str(l) for l in lams1])
+  plt.title('L = ' + str(L))
   
 if __name__ == '__main__':
   # f2()
