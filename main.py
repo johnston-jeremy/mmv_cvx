@@ -169,6 +169,6 @@ if __name__ == '__main__':
   K = 3
   # for L in [4,8,12,16,20]:
   for L in [12]:
-    mp(L)
+    mp(L, M, K)
   plt.show()
       # print(10*np.log10(np.linalg.norm(Xcvx.value-X)**2/np.linalg.norm(X)**2))
