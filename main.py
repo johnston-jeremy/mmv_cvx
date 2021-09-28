@@ -106,12 +106,12 @@ def f2():
   plt.plot(lams,res)
   plt.show()
 
-def mp():
-  M = 8
+def mp(L,M,K):
+  # M = 8
   N = 50
-  L = 12
-  K = 3
-  P = 8
+  # L = 12
+  # K = 3
+  P = 2*M
   channel_sparsity = 2
   # A = np.random.normal(size=(L,N)) + 1j*np.random.normal(size=(L,N))
   # Phi = np.random.normal(size=(P,M)) + 1j*np.random.normal(size=(P,M))
@@ -127,12 +127,9 @@ def mp():
   res = []
   Nlam1 = 10
   Nlam2 = 10
-  lams1 = np.logspace(-2,0, Nlam1)
-  lams2 = np.logspace(-2,0, Nlam2)
+  lams1 = np.logspace(-3,-1, Nlam1)
+  lams2 = np.logspace(-3,-1, Nlam2)
 
-  lam = 3.1
-  # lam2 = 1
-  
   p = problem(*(N,L,M,P,K,(M,1),channel_sparsity))
 
   ind = []
@@ -159,12 +156,19 @@ def mp():
     i,j,nsamp = e['ind']
     NMSE[i,j,nsamp] = np.linalg.norm(e['Xhat']-Zall[nsamp]@p.Phi.T)**2/np.linalg.norm(Zall[nsamp]@p.Phi.T)**2
   NMSE = 10*np.log10(np.mean(NMSE, axis=-1))
+
+  plt.figure()
   for nmse in NMSE:
     plt.plot(lams2, nmse)
   plt.legend([str(l) for l in lams2])
-  plt.show()
+  plt.title('L =', L)
   
 if __name__ == '__main__':
   # f2()
-  mp()
+  M = 8
+  K = 3
+  # for L in [4,8,12,16,20]:
+  for L in [12]:
+    mp(L)
+  plt.show()
       # print(10*np.log10(np.linalg.norm(Xcvx.value-X)**2/np.linalg.norm(X)**2))
