@@ -131,7 +131,7 @@ def mp(L,M,K):
   Yall = Ytest[0] + 1j*Ytest[1]
   Xall = Xtest[0] + 1j*Xtest[1]
   Nsamp = Xall.shape[0]
-  Nsamp = 2
+  # Nsamp = 2
   
   # print('SNR=', 10*np.log10(np.linalg.norm(A@X)**2/np.linalg.norm(noise)**2))
   res = []
@@ -218,7 +218,6 @@ def LMK():
   M = 8
   K = 3
   figL, axL = plt.subplots()
-  i = 0
   NMSE_L = []
   Llist = [4,8,12,16,20]
   for L in Llist:
@@ -229,7 +228,6 @@ def LMK():
   
   L = 12
   K = 3
-  i = 0
   figM, axM = plt.subplots()
   NMSE_M = []
   Mlist = [4,8,12,16]
@@ -241,7 +239,6 @@ def LMK():
 
   M = 8
   L = 12
-  i = 0
   figK, axK = plt.subplots()
   Klist = [3,4,5,6,7,8]
   NMSE_K = []
