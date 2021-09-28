@@ -161,14 +161,25 @@ def mp(L,M,K):
   for nmse in NMSE:
     plt.plot(lams2, nmse)
   plt.legend([str(l) for l in lams1])
-  plt.title('L = ' + str(L))
+  plt.title('L, M, K = ' + str((L,M,K)))
   
 if __name__ == '__main__':
   # f2()
   M = 8
   K = 3
-  # for L in [4,8,12,16,20]:
-  for L in [12]:
+  for L in [4,8,12,16,20]:
+  # for L in [12]:
     mp(L, M, K)
+  
+  L = 12
+  K = 3
+  for M in [4,8,12,16]:
+    mp(L, M, K)
+
+  M = 8
+  L = 12
+  for K in [3,4,5,6,7,8]:
+    mp(L, M, K)
+
   plt.show()
       # print(10*np.log10(np.linalg.norm(Xcvx.value-X)**2/np.linalg.norm(X)**2))
