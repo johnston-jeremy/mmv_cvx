@@ -119,9 +119,18 @@ def mp(L,M,K):
   # X[np.random.permutation(N)[:K]] = np.random.normal(size=(K,M))
   # noise = np.random.normal(size=(L,M))/5
   # Y = A@X + noise
+
   # SNRs = [10,15]
   SNR = 10
-  Nsamp = 10
+  # Nsamp = 10
+
+  # Yall, Zall, sigma = gen_c_2(p,Nsamp,channel_sparsity,N,L,M,P,K,SNR)
+  D = np.load('./testdata/data_L='+str(L)+'_M='+str(M)+'_K='+str(K)+'_SNR='+str(SNR)+'.npy', allow_pickle=True).item()
+  # set_trace()
+  Ytest, Xtest = D['Y'], D['X']
+  Yall = Ytest[0] + 1j*Ytest[1]
+  Xall = Xtest[0] + 1j*Xtest[1]
+  Nsamp = Xall.shape[0]
   
   # print('SNR=', 10*np.log10(np.linalg.norm(A@X)**2/np.linalg.norm(noise)**2))
   res = []
@@ -141,7 +150,7 @@ def mp(L,M,K):
   manager = Manager()
   E = manager.list()
 
-  Yall, Zall, sigma = gen_c_2(p,Nsamp,channel_sparsity,N,L,M,P,K,SNR)
+  
 
   Nworker = Nlam1*Nlam2*Nsamp
   inputs = list(zip([E]*Nworker, [p]*Nworker, [Yall]*Nworker, [lams1]*Nworker, [lams2]*Nworker, ind))
@@ -154,7 +163,7 @@ def mp(L,M,K):
   NMSE = np.zeros((len(lams1),len(lams2),Nsamp))
   for e in E:
     i,j,nsamp = e['ind']
-    NMSE[i,j,nsamp] = np.linalg.norm(e['Xhat']-Zall[nsamp]@p.Phi.T)**2/np.linalg.norm(Zall[nsamp]@p.Phi.T)**2
+    NMSE[i,j,nsamp] = np.linalg.norm(e['Xhat']-Xall[nsamp])**2/np.linalg.norm(Xall[nsamp])**2
   NMSE = 10*np.log10(np.mean(NMSE, axis=-1))
 
   return NMSE, lams1, lams2, (L,M,K)
@@ -167,8 +176,7 @@ def plot_nmse(ax, NMSE, lams1, lams2, LMK):
   ax.legend([str(l) for l in lams1])
   ax.set_title('L, M, K = ' + str((L,M,K)))
 
-if __name__ == '__main__':
-  # f2()
+def lam_tradeoff():
   M = 8
   K = 3
   figL, axL = plt.subplots(5,1)
@@ -198,4 +206,6 @@ if __name__ == '__main__':
     i += 1
 
   plt.show()
-      # print(10*np.log10(np.linalg.norm(Xcvx.value-X)**2/np.linalg.norm(X)**2))
+
+if __name__ == '__main__':
+  mp(L=12,M=8,K=3)
