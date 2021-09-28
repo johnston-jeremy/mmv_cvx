@@ -127,7 +127,7 @@ def mp(L,M,K):
   # Yall, Zall, sigma = gen_c_2(p,Nsamp,channel_sparsity,N,L,M,P,K,SNR)
   D = np.load('./testdata/data_L='+str(L)+'_M='+str(M)+'_K='+str(K)+'_SNR='+str(SNR)+'.npy', allow_pickle=True).item()
   # set_trace()
-  Ytest, Xtest = D['Y'], D['X']
+  Ytest, Xtest, p = D['Y'], D['X'], D['p']
   Yall = Ytest[0] + 1j*Ytest[1]
   Xall = Xtest[0] + 1j*Xtest[1]
   Nsamp = Xall.shape[0]
@@ -144,7 +144,7 @@ def mp(L,M,K):
   # lams1 = [0.1]
   # lams2 = [0.1]
 
-  p = problem(*(N,L,M,P,K,(M,1),channel_sparsity))
+  # p = problem(*(N,L,M,P,K,(M,1),channel_sparsity))
 
   ind = []
   for i in range(Nlam1):
