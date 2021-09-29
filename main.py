@@ -72,7 +72,7 @@ def worker3(inputs):
   c = [Y == p.A@Zcvx@Phi.T] # + [cp.imag(cp.matmul(Zcvx,p.Phi.T)) == cp.imag(Xcvx)]
   prob = cp.Problem(cp.Minimize(obj), c)
   prob.solve()
-  E.append({'Xhat':Xcvx.value, 'Zhat':Zcvx.value, 'ind':ind})
+  E.append({'Xhat':Zcvx.value@p.Phi.T, 'Zhat':Zcvx.value, 'ind':ind})
 
 def worker2(inputs):
   E, p, Yall, lams1, _, ind = inputs
