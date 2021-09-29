@@ -95,7 +95,7 @@ def worker4(inputs):
   Xcvx = cp.Variable(shape=(p.N,p.M),complex=True)
   obj = cp.sum(cp.norm(Xcvx,p=2,axis=1))
   c = [Y == p.A@Xcvx]
-  prob = cp.Problem(cp.Minimize(obj))
+  prob = cp.Problem(cp.Minimize(obj), c)
   prob.solve()
   E.append({'Xhat':Xcvx.value, 'ind':ind})
 
