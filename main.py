@@ -145,9 +145,9 @@ def worker3(inputs):
 
 def worker2(inputs):
   E, p, Yall, _, lams2, ind = inputs
-  i, _, nsamp = ind
+  i, j, nsamp = ind
   Y = Yall[nsamp]
-  lam2 = lams2[i]
+  lam2 = lams2[j]
 
   Xcvx = cp.Variable(shape=(p.N,p.M),complex=True)
   obj = cp.norm(Y-p.A@Xcvx)**2 + lam2*cp.sum(cp.norm(Xcvx,p=2,axis=1))
