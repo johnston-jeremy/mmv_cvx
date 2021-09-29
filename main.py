@@ -159,7 +159,7 @@ def mp(L,M,K):
   Yall = Ytest[0] + 1j*Ytest[1]
   Xall = Xtest[0] + 1j*Xtest[1]
   Nsamp = Xall.shape[0]
-  Nsamp = 100
+  Nsamp = 20
   
   # print('SNR=', 10*np.log10(np.linalg.norm(A@X)**2/np.linalg.norm(noise)**2))
   res = []
@@ -221,8 +221,8 @@ def lam_tradeoff(*args):
     K = 3
     figL, axL = plt.subplots(5,1)
     i = 0
-    for L in [4,8,12,16,20]:
-    # for L in [12]:
+    # for L in [4,8,12,16,20]:
+    for L in [12]:
       NMSE, lams1, lams2, LMK = mp(L, M, K)
       plot_nmse(axL[i], NMSE, lams1, lams2, LMK)
       i += 1
