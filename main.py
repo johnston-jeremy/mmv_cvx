@@ -426,7 +426,7 @@ def LMK(method, *args):
 
 if __name__ == '__main__':
   # lam_tradeoff('admm','L', 'M', 'K')
-  LMK('admm')
+  LMK('admm','L', 'M', 'K')
   import sys
   sys.exit()
   # LMK('mfocuss')
