@@ -177,14 +177,14 @@ def mp(L,M,K):
   # print('SNR=', 10*np.log10(np.linalg.norm(A@X)**2/np.linalg.norm(noise)**2))
   res = []
   # Nlam1 = 1
-  # Nlam2 = 5
+  Nlam2 = 5
   # lams1 = np.logspace(-2,0, Nlam1)
-  # lams2 = np.logspace(-2,0, Nlam2)
+  lams2 = np.logspace(-2,0, Nlam2)
 
   Nlam1 = 1
   lams1 = [0.1]
-  Nlam2 = 1
-  lams2 = [0.1]
+  # Nlam2 = 1
+  # lams2 = [0.1]
 
 
   # p = problem(*(N,L,M,P,K,(M,1),channel_sparsity))
@@ -204,7 +204,7 @@ def mp(L,M,K):
   inputs = list(zip([E]*Nworker, [p]*Nworker, [Yall]*Nworker, [lams1]*Nworker, [lams2]*Nworker, ind))
   
   with Pool() as pool:
-    for _ in tqdm.tqdm(pool.imap_unordered(worker4, inputs), total=len(inputs)):
+    for _ in tqdm.tqdm(pool.imap_unordered(worker2, inputs), total=len(inputs)):
         pass
     # pool.map(worker, inputs)
 
@@ -330,8 +330,8 @@ def LMK():
 
 if __name__ == '__main__':
   # NMSE, lams1, lams2, LMK = mp(L=12,M=8,K=3)
-  LMK()
-  # lam_tradeoff('L', 'M', 'K')
+  # LMK()
+  lam_tradeoff('L', 'M', 'K')
   # lam_tradeoff('L')
 
   # fig, ax = plt.subplots()
