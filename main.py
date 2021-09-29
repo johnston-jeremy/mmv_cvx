@@ -222,8 +222,8 @@ def lam_tradeoff(*args):
     K = 3
     figL, axL = plt.subplots(5,1)
     i = 0
-    # for L in [4,8,12,16,20]:
-    for L in [12]:
+    for L in [4,8,12,16,20]:
+    # for L in [12]:
       NMSE, lams1, lams2, LMK = mp(L, M, K)
       plot_nmse(axL[i], NMSE, lams1, lams2, LMK)
       i += 1
