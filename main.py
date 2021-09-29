@@ -58,6 +58,18 @@ def worker(inputs):
   prob.solve()
   E.append({'Xhat':Xcvx.value, 'Zhat':Zcvx.value, 'ind':ind})
 
+def worker2(inputs):
+  E, p, Yall, lams1, _, ind = inputs
+  i, _, nsamp = ind
+  Y = Yall[nsamp]
+  lam1 = lams1[i]
+
+  Xcvx = cp.Variable(shape=(p.N,p.M),complex=True)
+  obj = cp.norm(Y-p.A@Xcvx)**2 + lam1*cp.sum(cp.norm(Xcvx,p=2,axis=1))
+  prob = cp.Problem(cp.Minimize(obj))
+  prob.solve()
+  E.append({'Xhat':Xcvx.value, 'ind':ind})
+
 def f2():
   M = 8
   N = 50
@@ -131,19 +143,20 @@ def mp(L,M,K):
   Yall = Ytest[0] + 1j*Ytest[1]
   Xall = Xtest[0] + 1j*Xtest[1]
   Nsamp = Xall.shape[0]
-  # Nsamp = 2
+  Nsamp = 2
   
   # print('SNR=', 10*np.log10(np.linalg.norm(A@X)**2/np.linalg.norm(noise)**2))
   res = []
-  # Nlam1 = 2
-  # Nlam2 = 2
-  # lams1 = np.logspace(-3,-1, Nlam1)
-  # lams2 = np.logspace(-4,0, Nlam2)
+  Nlam1 = 5
+  Nlam2 = 3
+  lams1 = np.logspace(-1,0, Nlam1)
+  lams2 = np.logspace(-3,0, Nlam2)
 
-  Nlam1 = 1
-  Nlam2 = 1
-  lams1 = [0.1]
-  lams2 = [0.1]
+  # Nlam1 = 1
+  # lams1 = [0.1]
+  # Nlam2 = 1
+  # lams2 = [0.1]
+
 
   # p = problem(*(N,L,M,P,K,(M,1),channel_sparsity))
 
@@ -167,16 +180,19 @@ def mp(L,M,K):
     # pool.map(worker, inputs)
 
   NMSE = np.zeros((Nlam1,Nlam2,Nsamp))
+  # NMSE2 = np.zeros((Nlam1,Nlam2,Nsamp))
   for e in E:
     i,j,nsamp = e['ind']
     NMSE[i,j,nsamp] = np.linalg.norm(e['Xhat']-Xall[nsamp])**2/np.linalg.norm(Xall[nsamp])**2
-    # NMSE[i,j,nsamp] = np.linalg.norm(e['Zhat']@p.Phi.T-Xall[nsamp])**2/np.linalg.norm(Xall[nsamp])**2
+    # NMSE2[i,j,nsamp] = np.linalg.norm(e['Zhat']@p.Phi.T-Xall[nsamp])**2/np.linalg.norm(Xall[nsamp])**2
   NMSE = 10*np.log10(np.mean(NMSE, axis=-1))
+  # NMSE2 = 10*np.log10(np.mean(NMSE2, axis=-1))
 
   return NMSE, lams1, lams2, (L,M,K)
 
 def plot_nmse(ax, NMSE, lams1, lams2, LMK):
   L,M,K = LMK
+
   for nmse in NMSE:
     ax.plot(lams2, nmse)
   ax.set_xscale('log')
@@ -210,6 +226,37 @@ def lam_tradeoff():
   for K in [3,4,5,6,7,8]:
     NMSE, lams1, lams2, LMK = mp(L, M, K)
     plot_nmse(axK[i], NMSE, lams1, lams2, LMK)
+    i += 1
+
+  plt.show()
+  
+def lam_tradeoff_2():
+  M = 8
+  K = 3
+  figL, axL = plt.subplots(5,1)
+  i = 0
+  for L in [4,8,12,16,20]:
+  # for L in [12]:
+    NMSE, lams1, lams2, LMK = mp(L, M, K)
+    plot_nmse(axL[i], NMSE.T, [None], lams1, LMK)
+    i += 1
+  
+  L = 12
+  K = 3
+  i = 0
+  figM, axM = plt.subplots(4,1)
+  for M in [4,8,12,16]:
+    NMSE, lams1, lams2, LMK = mp(L, M, K)
+    plot_nmse(axM[i], NMSE.T, [None], lams1, LMK)
+    i += 1
+
+  M = 8
+  L = 12
+  i = 0
+  figK, axK = plt.subplots(6,1)
+  for K in [3,4,5,6,7,8]:
+    NMSE, lams1, lams2, LMK = mp(L, M, K)
+    plot_nmse(axK[i], NMSE.T, [None], lams1, LMK)
     i += 1
 
   plt.show()
@@ -251,7 +298,8 @@ def LMK():
 
 if __name__ == '__main__':
   # NMSE, lams1, lams2, LMK = mp(L=12,M=8,K=3)
-  LMK()
+  # LMK()
+  lam_tradeoff()
 
   # fig, ax = plt.subplots()
   # plot_nmse(ax, NMSE, lams1, lams2, LMK)
