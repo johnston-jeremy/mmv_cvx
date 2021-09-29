@@ -73,15 +73,16 @@ def worker_omp(inputs):
   A = prob.A
   Yk = Y
   I = []
-  while(1):
+  while(len(I) < prob.K):
     Z = A.T.conj() @ Yk
     k = np.argmax(np.linalg.norm(Z, axis=1))
     if k not in I:
       I.append(k)
-    Yk = Yk - A[:,k] @ Z[k]
+    Yk = Yk - np.outer(A[:,k], Z[k])
 
-    
-
+  X = np.zeros((prob.N,prob.M), dtype=complex)
+  X[I] = np.linalg.pinv(A[:,np.array(I)])@Y
+  E.append({'Xhat':X, 'ind':ind})
 
 
 def worker_vampmmse(inputs):
@@ -283,6 +284,8 @@ def mp(L,M,K,method):
     p.beta = params_mmse[(N,L,M,K,channel_sparsity,SNR)]
     p.params = omega, epsilon, p.beta, p.sigma_noise, ksi, p.maxiter, p.alpha
     worker_handle = worker_vampmmse
+  elif method == 'omp':
+    worker_handle = worker_omp
 
   manager = Manager()
   E = manager.list()
@@ -404,7 +407,6 @@ def LMK(method, *args):
   M = 8
   L = 12
   Klist = [3,4,5,6,7,8]
-  Klist = [5]
   NMSE_K = []
   if 'K' in args:
     for K in Klist:
@@ -426,12 +428,12 @@ def LMK(method, *args):
 
 if __name__ == '__main__':
   # lam_tradeoff('admm','L', 'M', 'K')
-  LMK('admm','L', 'M', 'K')
+  LMK('admm','K')
   import sys
   sys.exit()
   # LMK('mfocuss')
 
-  NMSE, lams1, lams2, L_M_K = mp(12,8,3, 'admm')
+  NMSE, lams1, lams2, L_M_K = mp(12,8,3, 'omp')
   print(NMSE.squeeze())
   set_trace()
 
