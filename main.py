@@ -247,13 +247,13 @@ def mp(L,M,K,method):
   res = []
   # Nlam1 = 1
   # lams1 = np.logspace(-2,0, Nlam1)
-  Nlam2 = 5
-  lams2 = np.logspace(-2,0, Nlam2)
+  # Nlam2 = 5
+  # lams2 = np.logspace(-2,0, Nlam2)
 
   Nlam1 = 1
   lams1 = [0.1]
-  # Nlam2 = 1
-  # lams2 = [0.1]
+  Nlam2 = 1
+  lams2 = [0.1]
 
 
   # p = problem(*(N,L,M,P,K,(M,1),channel_sparsity))
@@ -425,7 +425,11 @@ def LMK(method, *args):
     plt.show()
 
 if __name__ == '__main__':
-  lam_tradeoff('admm','L', 'M', 'K')
+  # lam_tradeoff('admm','L', 'M', 'K')
+  LMK('admm')
+  import sys
+  sys.exit()
+  # LMK('mfocuss')
 
   NMSE, lams1, lams2, L_M_K = mp(12,8,3, 'admm')
   print(NMSE.squeeze())
@@ -448,8 +452,7 @@ if __name__ == '__main__':
   plt.xscale('log')
   plt.show()
   # LMK('vampmmse', 'K')
-  # LMK('admm')
-  # LMK('mfocuss')
+  
   # lam_tradeoff('L')
 
   # fig, ax = plt.subplots()
