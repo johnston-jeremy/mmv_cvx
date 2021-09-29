@@ -1,3 +1,4 @@
+from vamp import vamp
 import tqdm
 import numpy as np
 import cvxpy as cp
@@ -7,6 +8,29 @@ from problem import problem
 from pdb import set_trace
 from multiprocessing import Pool, Manager
 
+# N,L,M,K,J,SNR
+params_mmse = {}
+# L
+params_mmse[(50,4,8,3,2,10)] = 0.05 # 50 iter
+params_mmse[(50,8,8,3,2,10)] = 0.03 # 50 iter
+params_mmse[(50,12,8,3,2,10)] = 0.3 # 50 iter
+params_mmse[(50,16,8,3,2,10)] = 0.3 # 50 iter
+params_mmse[(50,20,8,3,2,10)] = 0.3 # 15 iter
+# M
+params_mmse[(50,12,4,3,2,10)] = 0.3 # 50 iter
+params_mmse[(50,12,12,3,2,10)] = 0.3 # 100 iter
+params_mmse[(50,12,16,3,2,10)] = 0.3 # 100 iter
+# K
+params_mmse[(50,12,8,4,2,10)] = 0.3 # 100 iter
+params_mmse[(50,12,8,5,2,10)] = 0.3 # 100 iter
+params_mmse[(50,12,8,6,2,10)] = 0.5 # 100 iter
+params_mmse[(50,12,8,7,2,10)] = 0.5 # 100 iter
+params_mmse[(50,12,8,8,2,10)] = 0.3 # 100 iter
+# SNR
+params_mmse[(50,12,8,3,2,0)] = 0.3 # 100 iter
+params_mmse[(50,12,8,3,2,5)] = 0.3 # 100 iter
+params_mmse[(50,12,8,3,2,15)] = 0.3 # 150 iter
+params_mmse[(50,12,8,3,2,20)] = 0.15 # 250 iter
 
 def f1():
   M = 8
@@ -41,6 +65,32 @@ def f1():
     res[-1] = 10*np.log10(res[-1]/Nsamp)
   plt.plot(SNRs,res)
   plt.show()
+
+def worker_vampmmse(inputs):
+  E, prob, Yall, lams1,lams2, ind = inputs
+  i, j, nsamp = ind
+  Y = Yall[nsamp]
+  X = vamp(Y, prob, onsager=1)
+  E.append({'Xhat':X, 'ind':ind})
+
+def worker_mfocuss(inputs):
+  E, prob, Yall, lams1,lams2, ind = inputs
+  i, j, nsamp = ind
+  Y = Yall[nsamp]
+  Xk = np.linalg.pinv(prob.A)@Y
+  # Xk = np.random.normal(size=(prob.N,prob.M)) + 1j*np.random.normal(size=(prob.N,prob.M))
+  p = 0.8
+  tol = 0.01
+  while(1):
+    Xprev = Xk
+    Wk = np.diag(np.linalg.norm(Xk, axis=1))**(1-p/2)
+    Qk = np.linalg.pinv(prob.A@Wk)@Y
+    Xk = Wk@Qk
+    if np.linalg.norm(Xprev-Xk)/np.linalg.norm(Xk) < tol:
+      break
+  E.append({'Xhat':Xk, 'ind':ind})
+  
+
 
 def worker(inputs):
   E, p, Yall, lams1,lams2, ind = inputs
@@ -79,10 +129,10 @@ def worker2(inputs):
   E, p, Yall, _, lams2, ind = inputs
   i, _, nsamp = ind
   Y = Yall[nsamp]
-  lam2 = lams2[i]
+  # lam2 = lams2[i]
 
   Xcvx = cp.Variable(shape=(p.N,p.M),complex=True)
-  obj = cp.norm(Y-p.A@Xcvx)**2 + lam2*cp.sum(cp.norm(Xcvx,p=2,axis=1))
+  obj = cp.norm(Y-p.A@Xcvx)**2 + cp.sum(cp.norm(Xcvx,p=2,axis=1))
   prob = cp.Problem(cp.Minimize(obj))
   prob.solve()
   E.append({'Xhat':Xcvx.value, 'ind':ind})
@@ -147,7 +197,8 @@ def f2():
   plt.plot(lams,res)
   plt.show()
 
-def mp(L,M,K):
+def mp(L,M,K,method):
+  print(method)
   # M = 8
   N = 50
   # L = 12
@@ -172,7 +223,7 @@ def mp(L,M,K):
   Yall = Ytest[0] + 1j*Ytest[1]
   Xall = Xtest[0] + 1j*Xtest[1]
   Nsamp = Xall.shape[0]
-  Nsamp = 10
+  # Nsamp = 10
   
   # print('SNR=', 10*np.log10(np.linalg.norm(A@X)**2/np.linalg.norm(noise)**2))
   res = []
@@ -195,18 +246,35 @@ def mp(L,M,K):
       for nsamp in range(Nsamp):
         ind.append((i,j,nsamp))
 
+  
+  if method == 'admm':
+    worker_handle = worker2
+  elif method == 'mfocuss':
+    worker_handle = worker_mfocuss
+  elif method == 'vampmmse':
+    p.beta = 1 # channel variance
+    ksi = 1
+    omega = p.N/p.L
+    epsilon = p.K/p.N
+    p.maxiter = 500
+    p.params = omega, epsilon, p.beta, p.sigma_noise, ksi, p.maxiter, p.alpha
+    damp1 = 0.6
+    damp2 = 0
+    p.lam = 1
+    p.damp = damp1, damp2
+    p.denoiser = 'mmse'
+    p.onsager = 1
+    p.beta = params_mmse[(N,L,M,K,channel_sparsity,SNR)]
+    worker_handle = worker_vampmmse
+
   manager = Manager()
   E = manager.list()
-
-  
-
   Nworker = Nlam1*Nlam2*Nsamp
   inputs = list(zip([E]*Nworker, [p]*Nworker, [Yall]*Nworker, [lams1]*Nworker, [lams2]*Nworker, ind))
   
   with Pool() as pool:
-    for _ in tqdm.tqdm(pool.imap_unordered(worker2, inputs), total=len(inputs)):
+    for _ in tqdm.tqdm(pool.imap_unordered(worker_handle, inputs), total=len(inputs)):
         pass
-    # pool.map(worker, inputs)
 
   NMSE = np.zeros((Nlam1,Nlam2,Nsamp))
   # NMSE2 = np.zeros((Nlam1,Nlam2,Nsamp))
@@ -296,47 +364,49 @@ def lam_tradeoff_2():
 
   plt.show()
   
-def LMK():
+def LMK(method, *args):
   M = 8
   K = 3
-  figL, axL = plt.subplots()
   NMSE_L = []
   Llist = [4,8,12,16,20]
   for L in Llist:
   # for L in [12]:
-    NMSE, lams1, lams2, LMK = mp(L, M, K)
+    NMSE, lams1, lams2, LMK = mp(L, M, K, method)
     NMSE_L.append(NMSE[0,0])
-  axL.plot(Llist, NMSE_L)
-  print('L', NMSE_L)
   
   L = 12
   K = 3
-  figM, axM = plt.subplots()
   NMSE_M = []
   Mlist = [4,8,12,16]
   for M in Mlist:
-    NMSE, lams1, lams2, LMK = mp(L, M, K)
+    NMSE, lams1, lams2, LMK = mp(L, M, K, method)
     NMSE_M.append(NMSE[0,0])
-  axM.plot(Mlist, NMSE_M)
-  print('M', NMSE_M)
-  
 
   M = 8
   L = 12
-  figK, axK = plt.subplots()
   Klist = [3,4,5,6,7,8]
   NMSE_K = []
   for K in Klist:
-    NMSE, lams1, lams2, LMK = mp(L, M, K)
+    NMSE, lams1, lams2, LMK = mp(L, M, K, method)
     NMSE_K.append(NMSE[0,0])
-  axK.plot(Klist, NMSE_K)
+  print('L', NMSE_L)
+  print('M', NMSE_M)
   print('K', NMSE_K)
-
-  plt.show()
+  
+  if 'plot' in args:
+    figK, axK = plt.subplots()
+    figM, axM = plt.subplots()
+    figL, axL = plt.subplots()
+    axL.plot(Llist, NMSE_L)
+    axM.plot(Mlist, NMSE_M)
+    axK.plot(Klist, NMSE_K)
+    plt.show()
 
 if __name__ == '__main__':
   # NMSE, lams1, lams2, LMK = mp(L=12,M=8,K=3)
-  LMK()
+  LMK('vampmmse')
+  LMK('admm')
+  LMK('mfocuss')
   # lam_tradeoff('L', 'M', 'K')
   # lam_tradeoff('L')
 
