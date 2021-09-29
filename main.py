@@ -165,8 +165,8 @@ def mp(L,M,K):
   res = []
   Nlam1 = 3
   Nlam2 = 5
-  lams1 = np.logspace(-1,0, Nlam1)
-  lams2 = np.logspace(-3,0, Nlam2)
+  lams1 = np.logspace(-2,0, Nlam1)
+  lams2 = np.logspace(-3,0.5, Nlam2)
 
   # Nlam1 = 1
   # lams1 = [0.1]
