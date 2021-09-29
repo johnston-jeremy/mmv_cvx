@@ -69,7 +69,7 @@ def worker3(inputs):
   Xcvx = cp.Variable(shape=(p.N,p.M),complex=True)
   obj = lam1*cp.sum(cp.norm(Zcvx@Phi.T,p=2,axis=1)) + lam2*cp.norm(Zcvx, p=1)
   # set_trace()
-  c = [Y == p.A@Xcvx] # + [cp.imag(cp.matmul(Zcvx,p.Phi.T)) == cp.imag(Xcvx)]
+  c = [Y == p.A@Zcvx@Phi.T] # + [cp.imag(cp.matmul(Zcvx,p.Phi.T)) == cp.imag(Xcvx)]
   prob = cp.Problem(cp.Minimize(obj), c)
   prob.solve()
   E.append({'Xhat':Xcvx.value, 'Zhat':Zcvx.value, 'ind':ind})
