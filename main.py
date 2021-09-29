@@ -319,7 +319,8 @@ def LMK():
 if __name__ == '__main__':
   # NMSE, lams1, lams2, LMK = mp(L=12,M=8,K=3)
   # LMK()
-  lam_tradeoff('L', 'M', 'K')
+  # lam_tradeoff('L', 'M', 'K')
+  lam_tradeoff('L')
 
   # fig, ax = plt.subplots()
   # plot_nmse(ax, NMSE, lams1, lams2, LMK)
