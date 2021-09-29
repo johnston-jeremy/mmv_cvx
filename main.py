@@ -143,12 +143,12 @@ def mp(L,M,K):
   Yall = Ytest[0] + 1j*Ytest[1]
   Xall = Xtest[0] + 1j*Xtest[1]
   Nsamp = Xall.shape[0]
-  Nsamp = 2
+  # Nsamp = 2
   
   # print('SNR=', 10*np.log10(np.linalg.norm(A@X)**2/np.linalg.norm(noise)**2))
   res = []
-  Nlam1 = 5
-  Nlam2 = 3
+  Nlam1 = 3
+  Nlam2 = 5
   lams1 = np.logspace(-1,0, Nlam1)
   lams2 = np.logspace(-3,0, Nlam2)
 
