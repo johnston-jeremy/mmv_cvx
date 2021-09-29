@@ -66,6 +66,24 @@ def f1():
   plt.plot(SNRs,res)
   plt.show()
 
+def worker_omp(inputs):
+  E, prob, Yall, lams1,lams2, ind = inputs
+  i, j, nsamp = ind
+  Y = Yall[nsamp]
+  A = prob.A
+  Yk = Y
+  I = []
+  while(1):
+    Z = A.T.conj() @ Yk
+    k = np.argmax(np.linalg.norm(Z, axis=1))
+    if k not in I:
+      I.append(k)
+    Yk = Yk - A[:,k] @ Z[k]
+
+    
+
+
+
 def worker_vampmmse(inputs):
   E, prob, Yall, lams1,lams2, ind = inputs
   i, j, nsamp = ind
@@ -129,10 +147,10 @@ def worker2(inputs):
   E, p, Yall, _, lams2, ind = inputs
   i, _, nsamp = ind
   Y = Yall[nsamp]
-  # lam2 = lams2[i]
+  lam2 = lams2[i]
 
   Xcvx = cp.Variable(shape=(p.N,p.M),complex=True)
-  obj = cp.norm(Y-p.A@Xcvx)**2 + cp.sum(cp.norm(Xcvx,p=2,axis=1))
+  obj = cp.norm(Y-p.A@Xcvx)**2 + lam2*cp.sum(cp.norm(Xcvx,p=2,axis=1))
   prob = cp.Problem(cp.Minimize(obj))
   prob.solve()
   E.append({'Xhat':Xcvx.value, 'ind':ind})
@@ -198,7 +216,7 @@ def f2():
   plt.show()
 
 def mp(L,M,K,method):
-  print(method)
+  print(L,M,K,method)
   # M = 8
   N = 50
   # L = 12
@@ -223,19 +241,19 @@ def mp(L,M,K,method):
   Yall = Ytest[0] + 1j*Ytest[1]
   Xall = Xtest[0] + 1j*Xtest[1]
   Nsamp = Xall.shape[0]
-  # Nsamp = 10
+  Nsamp = 10
   
   # print('SNR=', 10*np.log10(np.linalg.norm(A@X)**2/np.linalg.norm(noise)**2))
   res = []
   # Nlam1 = 1
   # lams1 = np.logspace(-2,0, Nlam1)
-  # Nlam2 = 5
-  # lams2 = np.logspace(-2,0, Nlam2)
+  Nlam2 = 5
+  lams2 = np.logspace(-2,0, Nlam2)
 
   Nlam1 = 1
   lams1 = [0.1]
-  Nlam2 = 1
-  lams2 = [0.1]
+  # Nlam2 = 1
+  # lams2 = [0.1]
 
 
   # p = problem(*(N,L,M,P,K,(M,1),channel_sparsity))
@@ -252,12 +270,10 @@ def mp(L,M,K,method):
   elif method == 'mfocuss':
     worker_handle = worker_mfocuss
   elif method == 'vampmmse':
-    p.beta = 1 # channel variance
     ksi = 1
     omega = p.N/p.L
-    epsilon = p.K/p.N
+    # epsilon = p.K/p.N
     p.maxiter = 500
-    p.params = omega, epsilon, p.beta, p.sigma_noise, ksi, p.maxiter, p.alpha
     damp1 = 0.6
     damp2 = 0
     p.lam = 1
@@ -265,13 +281,14 @@ def mp(L,M,K,method):
     p.denoiser = 'mmse'
     p.onsager = 1
     p.beta = params_mmse[(N,L,M,K,channel_sparsity,SNR)]
+    p.params = omega, epsilon, p.beta, p.sigma_noise, ksi, p.maxiter, p.alpha
     worker_handle = worker_vampmmse
 
   manager = Manager()
   E = manager.list()
   Nworker = Nlam1*Nlam2*Nsamp
   inputs = list(zip([E]*Nworker, [p]*Nworker, [Yall]*Nworker, [lams1]*Nworker, [lams2]*Nworker, ind))
-  
+
   with Pool() as pool:
     for _ in tqdm.tqdm(pool.imap_unordered(worker_handle, inputs), total=len(inputs)):
         pass
@@ -369,26 +386,31 @@ def LMK(method, *args):
   K = 3
   NMSE_L = []
   Llist = [4,8,12,16,20]
-  for L in Llist:
-  # for L in [12]:
-    NMSE, lams1, lams2, LMK = mp(L, M, K, method)
-    NMSE_L.append(NMSE[0,0])
+  if 'L' in args:
+    for L in Llist:
+    # for L in [12]:
+      NMSE, lams1, lams2, LMK = mp(L, M, K, method)
+      NMSE_L.append(NMSE[0,0])
   
   L = 12
   K = 3
   NMSE_M = []
   Mlist = [4,8,12,16]
-  for M in Mlist:
-    NMSE, lams1, lams2, LMK = mp(L, M, K, method)
-    NMSE_M.append(NMSE[0,0])
+  if 'M' in args:
+    for M in Mlist:
+      NMSE, lams1, lams2, LMK = mp(L, M, K, method)
+      NMSE_M.append(NMSE[0,0])
 
   M = 8
   L = 12
   Klist = [3,4,5,6,7,8]
+  Klist = [5]
   NMSE_K = []
-  for K in Klist:
-    NMSE, lams1, lams2, LMK = mp(L, M, K, method)
-    NMSE_K.append(NMSE[0,0])
+  if 'K' in args:
+    for K in Klist:
+      NMSE, lams1, lams2, LMK = mp(L, M, K, method)
+      NMSE_K.append(NMSE[0,0])
+
   print('L', NMSE_L)
   print('M', NMSE_M)
   print('K', NMSE_K)
@@ -403,11 +425,31 @@ def LMK(method, *args):
     plt.show()
 
 if __name__ == '__main__':
-  # NMSE, lams1, lams2, LMK = mp(L=12,M=8,K=3)
-  LMK('vampmmse')
-  LMK('admm')
-  LMK('mfocuss')
-  # lam_tradeoff('L', 'M', 'K')
+  lam_tradeoff('L', 'M', 'K')
+
+  NMSE, lams1, lams2, L_M_K = mp(12,8,3, 'admm')
+  print(NMSE.squeeze())
+  set_trace()
+
+  M = 8
+  L = 12
+  K = 5
+  method = 'vampmmse'
+  res = []
+  betas = np.logspace(-2,1,100)
+  epsilon = 0.03
+  for params_mmse[(50,12,8,5,2,10)] in betas:
+  # for epsilon in betas:
+    print(params_mmse[(50,12,8,5,2,10)])
+    # print(epsilon)
+    NMSE, lams1, lams2, L_M_K = mp(L, M, K, method)
+    res.append(NMSE.squeeze())
+  plt.plot(betas, res)
+  plt.xscale('log')
+  plt.show()
+  # LMK('vampmmse', 'K')
+  # LMK('admm')
+  # LMK('mfocuss')
   # lam_tradeoff('L')
 
   # fig, ax = plt.subplots()
