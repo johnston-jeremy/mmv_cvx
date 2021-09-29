@@ -70,7 +70,7 @@ def worker3(inputs):
   obj = lam1*cp.sum(cp.norm(Zcvx@Phi.T,p=2,axis=1)) + cp.norm(Zcvx, p=1)
   # set_trace()
   # c = [Y == p.A@Zcvx@Phi.T] # + [cp.imag(cp.matmul(Zcvx,p.Phi.T)) == cp.imag(Xcvx)]
-  c = [cp.norm(Y - p.A@Zcvx@Phi.T)**2 <= lam2] # + [cp.imag(cp.matmul(Zcvx,p.Phi.T)) == cp.imag(Xcvx)]
+  c = [cp.norm(Y - p.A@Zcvx@Phi.T)**2 <= lam2*cp.norm(Y)**2] # + [cp.imag(cp.matmul(Zcvx,p.Phi.T)) == cp.imag(Xcvx)]
   prob = cp.Problem(cp.Minimize(obj), c)
   prob.solve()
   E.append({'Xhat':Zcvx.value@p.Phi.T, 'Zhat':Zcvx.value, 'ind':ind})
@@ -167,7 +167,7 @@ def mp(L,M,K):
   # Nlam1 = 1
   Nlam2 = 5
   # lams1 = np.logspace(-2,0, Nlam1)
-  lams2 = np.logspace(0,1, Nlam2)
+  lams2 = np.logspace(-1,1, Nlam2)
 
   Nlam1 = 1
   lams1 = [0.1]
