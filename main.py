@@ -58,6 +58,22 @@ def worker(inputs):
   prob.solve()
   E.append({'Xhat':Xcvx.value, 'Zhat':Zcvx.value, 'ind':ind})
 
+def worker3(inputs):
+  E, p, Yall, lams1,lams2, ind = inputs
+  i, j, nsamp = ind
+  Y = Yall[nsamp]
+  lam1, lam2 = lams1[i], lams2[j]
+
+  Phi = cp.Constant(p.Phi.real) + 1j*cp.Constant(p.Phi.imag)
+  Zcvx = cp.Variable(shape=(p.N,p.Ng),complex=True)
+  Xcvx = cp.Variable(shape=(p.N,p.M),complex=True)
+  obj = lam1*cp.sum(cp.norm(Zcvx@Phi.T,p=2,axis=1)) + lam2*cp.norm(Zcvx, p=1)
+  # set_trace()
+  c = [Y == p.A@Xcvx] # + [cp.imag(cp.matmul(Zcvx,p.Phi.T)) == cp.imag(Xcvx)]
+  prob = cp.Problem(cp.Minimize(obj), c)
+  prob.solve()
+  E.append({'Xhat':Xcvx.value, 'Zhat':Zcvx.value, 'ind':ind})
+
 def worker2(inputs):
   E, p, Yall, lams1, _, ind = inputs
   i, _, nsamp = ind
@@ -175,7 +191,7 @@ def mp(L,M,K):
   inputs = list(zip([E]*Nworker, [p]*Nworker, [Yall]*Nworker, [lams1]*Nworker, [lams2]*Nworker, ind))
   
   with Pool() as pool:
-    for _ in tqdm.tqdm(pool.imap_unordered(worker, inputs), total=len(inputs)):
+    for _ in tqdm.tqdm(pool.imap_unordered(worker3, inputs), total=len(inputs)):
         pass
     # pool.map(worker, inputs)
 
@@ -199,34 +215,37 @@ def plot_nmse(ax, NMSE, lams1, lams2, LMK):
   ax.legend([str(l) for l in lams1])
   ax.set_title('L, M, K = ' + str((L,M,K)))
 
-def lam_tradeoff():
-  M = 8
-  K = 3
-  figL, axL = plt.subplots(5,1)
-  i = 0
-  for L in [4,8,12,16,20]:
-  # for L in [12]:
-    NMSE, lams1, lams2, LMK = mp(L, M, K)
-    plot_nmse(axL[i], NMSE, lams1, lams2, LMK)
-    i += 1
+def lam_tradeoff(*args):
+  if 'L' in args:
+    M = 8
+    K = 3
+    figL, axL = plt.subplots(5,1)
+    i = 0
+    for L in [4,8,12,16,20]:
+    # for L in [12]:
+      NMSE, lams1, lams2, LMK = mp(L, M, K)
+      plot_nmse(axL[i], NMSE, lams1, lams2, LMK)
+      i += 1
   
-  L = 12
-  K = 3
-  i = 0
-  figM, axM = plt.subplots(4,1)
-  for M in [4,8,12,16]:
-    NMSE, lams1, lams2, LMK = mp(L, M, K)
-    plot_nmse(axM[i], NMSE, lams1, lams2, LMK)
-    i += 1
+  if 'M' in args:
+    L = 12
+    K = 3
+    i = 0
+    figM, axM = plt.subplots(4,1)
+    for M in [4,8,12,16]:
+      NMSE, lams1, lams2, LMK = mp(L, M, K)
+      plot_nmse(axM[i], NMSE, lams1, lams2, LMK)
+      i += 1
 
-  M = 8
-  L = 12
-  i = 0
-  figK, axK = plt.subplots(6,1)
-  for K in [3,4,5,6,7,8]:
-    NMSE, lams1, lams2, LMK = mp(L, M, K)
-    plot_nmse(axK[i], NMSE, lams1, lams2, LMK)
-    i += 1
+  if 'K' in args:
+    M = 8
+    L = 12
+    i = 0
+    figK, axK = plt.subplots(6,1)
+    for K in [3,4,5,6,7,8]:
+      NMSE, lams1, lams2, LMK = mp(L, M, K)
+      plot_nmse(axK[i], NMSE, lams1, lams2, LMK)
+      i += 1
 
   plt.show()
   
@@ -299,7 +318,7 @@ def LMK():
 if __name__ == '__main__':
   # NMSE, lams1, lams2, LMK = mp(L=12,M=8,K=3)
   # LMK()
-  lam_tradeoff()
+  lam_tradeoff('L')
 
   # fig, ax = plt.subplots()
   # plot_nmse(ax, NMSE, lams1, lams2, LMK)
