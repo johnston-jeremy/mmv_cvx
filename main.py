@@ -239,6 +239,7 @@ def lam_tradeoff(*args):
       NMSE, lams1, lams2, LMK = mp(L, M, K)
       plot_nmse(axL[i], NMSE, lams1, lams2, LMK)
       i += 1
+      print('L =', L, NMSE)
   
   if 'M' in args:
     L = 12
@@ -249,6 +250,7 @@ def lam_tradeoff(*args):
       NMSE, lams1, lams2, LMK = mp(L, M, K)
       plot_nmse(axM[i], NMSE, lams1, lams2, LMK)
       i += 1
+      print('M =', M, NMSE)
 
   if 'K' in args:
     M = 8
@@ -259,6 +261,7 @@ def lam_tradeoff(*args):
       NMSE, lams1, lams2, LMK = mp(L, M, K)
       plot_nmse(axK[i], NMSE, lams1, lams2, LMK)
       i += 1
+      print('K =', K, NMSE)
 
   plt.show()
   
@@ -304,6 +307,7 @@ def LMK():
     NMSE, lams1, lams2, LMK = mp(L, M, K)
     NMSE_L.append(NMSE[0,0])
   axL.plot(Llist, NMSE_L)
+  print('L', NMSE_L)
   
   L = 12
   K = 3
@@ -314,6 +318,7 @@ def LMK():
     NMSE, lams1, lams2, LMK = mp(L, M, K)
     NMSE_M.append(NMSE[0,0])
   axM.plot(Mlist, NMSE_M)
+  print('M', NMSE_M)
   
 
   M = 8
@@ -325,13 +330,14 @@ def LMK():
     NMSE, lams1, lams2, LMK = mp(L, M, K)
     NMSE_K.append(NMSE[0,0])
   axK.plot(Klist, NMSE_K)
+  print('K', NMSE_K)
 
   plt.show()
 
 if __name__ == '__main__':
   # NMSE, lams1, lams2, LMK = mp(L=12,M=8,K=3)
-  # LMK()
-  lam_tradeoff('L', 'M', 'K')
+  LMK()
+  # lam_tradeoff('L', 'M', 'K')
   # lam_tradeoff('L')
 
   # fig, ax = plt.subplots()
