@@ -456,7 +456,7 @@ if __name__ == '__main__':
   K = 3
   method = 'vampmmse'
   res = []
-  betas = np.logspace(-.1,1,75)
+  betas = np.logspace(-1,0,27)
   for params_mmse[(50,L,M,K,2,10)] in betas:
   # for epsilon in betas:
     print(params_mmse[(50,L,M,K,2,10)])
