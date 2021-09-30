@@ -11,15 +11,15 @@ from multiprocessing import Pool, Manager
 # N,L,M,K,J,SNR
 params_mmse = {}
 # L
-params_mmse[(50,4,8,3,2,10)] = 0.05 # 50 iter
-params_mmse[(50,8,8,3,2,10)] = 0.03 # 50 iter
-params_mmse[(50,12,8,3,2,10)] = 0.3 # 50 iter
-params_mmse[(50,16,8,3,2,10)] = 0.3 # 50 iter
-params_mmse[(50,20,8,3,2,10)] = 0.3 # 15 iter
+params_mmse[(50,4,8,3,2,10)] = 1 #0.05 # 50 iter
+params_mmse[(50,8,8,3,2,10)] = 1 #0.03 # 50 iter
+params_mmse[(50,12,8,3,2,10)] = 1 #0.3 # 50 iter
+params_mmse[(50,16,8,3,2,10)] = 1 #0.3 # 50 iter
+params_mmse[(50,20,8,3,2,10)] = 1 #0.3 # 15 iter
 # M
-params_mmse[(50,12,4,3,2,10)] = 0.3 # 50 iter
-params_mmse[(50,12,12,3,2,10)] = 0.3 # 100 iter
-params_mmse[(50,12,16,3,2,10)] = 0.3 # 100 iter
+params_mmse[(50,12,4,3,2,10)] = 1 #0.3 # 50 iter
+params_mmse[(50,12,12,3,2,10)] = 1 #0.3 # 100 iter
+params_mmse[(50,12,16,3,2,10)] = 1 #0.3 # 100 iter
 # K
 params_mmse[(50,12,8,4,2,10)] = 1 # 0.3 # 100 iter
 params_mmse[(50,12,8,5,2,10)] = 1 #0.3 # 100 iter
@@ -27,10 +27,10 @@ params_mmse[(50,12,8,6,2,10)] = 1 #0.5 # 100 iter
 params_mmse[(50,12,8,7,2,10)] = 1 # 0.5 # 100 iter
 params_mmse[(50,12,8,8,2,10)] = 1 # 0.3 # 100 iter
 # SNR
-params_mmse[(50,12,8,3,2,0)] = 0.3 # 100 iter
-params_mmse[(50,12,8,3,2,5)] = 0.3 # 100 iter
-params_mmse[(50,12,8,3,2,15)] = 0.3 # 150 iter
-params_mmse[(50,12,8,3,2,20)] = 0.15 # 250 iter
+params_mmse[(50,12,8,3,2,0)] = 1 #0.3 # 100 iter
+params_mmse[(50,12,8,3,2,5)] = 1 #0.3 # 100 iter
+params_mmse[(50,12,8,3,2,15)] = 1 #0.3 # 150 iter
+params_mmse[(50,12,8,3,2,20)] = 1 #0.15 # 250 iter
 
 def f1():
   M = 8
@@ -440,7 +440,7 @@ def LMK(method, *args):
 
 if __name__ == '__main__':
   # lam_tradeoff('admm','L', 'M', 'K')
-  LMK('vampmmse','K')
+  LMK('vampmmse','L', 'M', 'K')
   import sys
   sys.exit()
   # LMK('mfocuss')
