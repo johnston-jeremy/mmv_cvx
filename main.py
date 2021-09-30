@@ -311,20 +311,20 @@ def mp(L,M,K,method):
   # Xall = Xtest[0] + 1j*Xtest[1]
   
   Nsamp = Xall.shape[0]
-  Nsamp = 10
+  Nsamp = 24
   # set_trace()
   
   # print('SNR=', 10*np.log10(np.linalg.norm(A@X)**2/np.linalg.norm(noise)**2))
   res = []
-  Nlam1 = 5
-  lams1 = np.logspace(-3,0, Nlam1)
-  Nlam2 = 5
-  lams2 = np.logspace(-3,0, Nlam2)
+  # Nlam1 = 5
+  # lams1 = np.logspace(-3,0, Nlam1)
+  # Nlam2 = 5
+  # lams2 = np.logspace(-3,0, Nlam2)
 
-  # Nlam1 = 1
-  # lams1 = [0.1]
-  # Nlam2 = 1
-  # lams2 = [0.1]
+  Nlam1 = 1
+  lams1 = [0.1]
+  Nlam2 = 1
+  lams2 = [0.1]
 
 
   # p = problem(*(N,L,M,P,K,(M,1),channel_sparsity))
@@ -633,9 +633,9 @@ def LMK_jobs(method, *args):
 if __name__ == '__main__':
   # lam_tradeoff('cvx','L', 'M', 'K')
   
-  # LMK('cvx','M')
-  # import sys
-  # sys.exit()
+  LMK('cvx','L','M','K')
+  import sys
+  sys.exit()
 
   # LMK('mfocuss')
 
