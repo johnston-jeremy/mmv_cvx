@@ -292,7 +292,7 @@ def mp(L,M,K,method):
   Yall = Ytest[0] + 1j*Ytest[1]
   Xall = Xtest[0] + 1j*Xtest[1]
   Nsamp = Xall.shape[0]
-  Nsamp = 12
+  Nsamp = 1000
   
   # print('SNR=', 10*np.log10(np.linalg.norm(A@X)**2/np.linalg.norm(noise)**2))
   res = []
@@ -337,7 +337,6 @@ def mp(L,M,K,method):
   elif method == 'omp':
     worker_handle = worker_omp
   elif method == 'oracle':
-    Nsamp = 1000
     Yall,Xall, Zall,_ = gen_c_2(p, Nsamp,channel_sparsity,N,L,M,P,K,SNR)
     np.save('./testdata/data_L='+str(L)+'_M='+str(M)+'_K='+str(K)+'_SNR='+str(SNR)+'.npy',{'Y':Yall,'X':Xall, 'Z':Zall, 'p':p})
     worker_handle = worker_oracle
