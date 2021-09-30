@@ -304,11 +304,11 @@ def mp(L,M,K,method):
   # Yall, Zall, sigma = gen_c_2(p,Nsamp,channel_sparsity,N,L,M,P,K,SNR)
   D = np.load('./testdata/data_L='+str(L)+'_M='+str(M)+'_K='+str(K)+'_SNR='+str(SNR)+'.npy', allow_pickle=True).item()
   # set_trace()
-  Yall, Xall, p = D['Y'], D['X'], D['p']
+  # Yall, Xall, p = D['Y'], D['X'], D['p']
   
-  # Ytest, Xtest, p = D['Y'], D['X'], D['p']
-  # Yall = Ytest[0] + 1j*Ytest[1]
-  # Xall = Xtest[0] + 1j*Xtest[1]
+  Ytest, Xtest, p = D['Y'], D['X'], D['p']
+  Yall = Ytest[0] + 1j*Ytest[1]
+  Xall = Xtest[0] + 1j*Xtest[1]
   
   Nsamp = Xall.shape[0]
   Nsamp = 24
@@ -633,7 +633,7 @@ def LMK_jobs(method, *args):
 if __name__ == '__main__':
   # lam_tradeoff('cvx','L', 'M', 'K')
   
-  LMK('cvx','L','M','K')
+  LMK('cvx','K')
   import sys
   sys.exit()
 
