@@ -440,9 +440,11 @@ def LMK(method, *args):
 
 if __name__ == '__main__':
   # lam_tradeoff('admm','L', 'M', 'K')
-  LMK('vampmmse','L', 'M', 'K')
-  import sys
-  sys.exit()
+  
+  # LMK('vampmmse','L', 'M', 'K')
+  # import sys
+  # sys.exit()
+
   # LMK('mfocuss')
 
   # NMSE, lams1, lams2, L_M_K = mp(12,8,3, 'oracle')
@@ -450,14 +452,14 @@ if __name__ == '__main__':
   # set_trace()
 
   M = 8
-  L = 12
-  K = 5
+  L = 4
+  K = 3
   method = 'vampmmse'
   res = []
-  betas = np.logspace(-.5,.5,75)
-  for params_mmse[(50,12,8,K,2,10)] in betas:
+  betas = np.logspace(-.1,1,75)
+  for params_mmse[(50,L,M,K,2,10)] in betas:
   # for epsilon in betas:
-    print(params_mmse[(50,12,8,K,2,10)])
+    print(params_mmse[(50,L,M,K,2,10)])
     # print(epsilon)
     NMSE, lams1, lams2, L_M_K = mp(L, M, K, method)
     res.append(NMSE.squeeze())
