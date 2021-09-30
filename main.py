@@ -397,6 +397,7 @@ def mp_jobs(L,M,K,method):
   E = manager.list()
   Nworker = Nlam1*Nlam2*Nsamp
   inputs = list(zip([E]*Nworker, [p]*Nworker, [Yall]*Nworker, [Xall]*Nworker, [lams1]*Nworker, [lams2]*Nworker, ind))
+  return inputs, E
 
 def plot_nmse(ax, NMSE, lams1, lams2, LMK):
   L,M,K = LMK
@@ -517,12 +518,57 @@ def LMK(method, *args):
     axK.plot(Klist, NMSE_K)
     plt.show()
 
+def LMK_jobs(method, *args):
+  M = 8
+  K = 3
+  NMSE_L = []
+  Llist = [4,8,12,16,20]
+  EL = []
+  inputsL = []
+  if 'L' in args:
+    for L in Llist:
+    # for L in [12]:
+      inputs, E = mp_jobs(L, M, K, method)
+      NMSE, lams1, lams2, LMK = mp(L, M, K, method)
+      NMSE_L.append(NMSE[0,0])
+  
+  L = 12
+  K = 3
+  NMSE_M = []
+  Mlist = [4,8,12,16]
+  if 'M' in args:
+    for M in Mlist:
+      NMSE, lams1, lams2, LMK = mp(L, M, K, method)
+      NMSE_M.append(NMSE[0,0])
+
+  M = 8
+  L = 12
+  Klist = [3,4,5,6,7,8]
+  NMSE_K = []
+  if 'K' in args:
+    for K in Klist:
+      NMSE, lams1, lams2, LMK = mp(L, M, K, method)
+      NMSE_K.append(NMSE[0,0])
+
+  print('L', NMSE_L)
+  print('M', NMSE_M)
+  print('K', NMSE_K)
+  
+  if 'plot' in args:
+    figK, axK = plt.subplots()
+    figM, axM = plt.subplots()
+    figL, axL = plt.subplots()
+    axL.plot(Llist, NMSE_L)
+    axM.plot(Mlist, NMSE_M)
+    axK.plot(Klist, NMSE_K)
+    plt.show()
+
 if __name__ == '__main__':
   # lam_tradeoff('cvx','L', 'M', 'K')
   
-  LMK('cvx','L', 'M', 'K')
-  import sys
-  sys.exit()
+  # LMK('omp','L', 'M', 'K')
+  # import sys
+  # sys.exit()
 
   # LMK('mfocuss')
 
@@ -530,12 +576,12 @@ if __name__ == '__main__':
   # print(NMSE.squeeze())
   # set_trace()
 
-  M = 8
-  L = 8
+  M = 4
+  L = 12
   K = 3
   method = 'vampmmse'
   res = []
-  betas = np.logspace(-1.5,-0.5,25)
+  betas = np.logspace(-1,0.5,25)
   for params_mmse[(50,L,M,K,2,10)] in betas:
   # for epsilon in betas:
     print(params_mmse[(50,L,M,K,2,10)])
