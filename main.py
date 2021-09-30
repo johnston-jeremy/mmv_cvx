@@ -529,6 +529,7 @@ def LMK(method, *args):
     for L in Llist:
     # for L in [12]:
       NMSE, lams1, lams2, LMK = mp(L, M, K, method)
+      print(NMSE[0,0])
       NMSE_L.append(NMSE[0,0])
   
   L = 12
@@ -538,6 +539,7 @@ def LMK(method, *args):
   if 'M' in args:
     for M in Mlist:
       NMSE, lams1, lams2, LMK = mp(L, M, K, method)
+      print(NMSE[0,0])
       NMSE_M.append(NMSE[0,0])
 
   M = 8
@@ -547,6 +549,7 @@ def LMK(method, *args):
   if 'K' in args:
     for K in Klist:
       NMSE, lams1, lams2, LMK = mp(L, M, K, method)
+      print(NMSE[0,0])
       NMSE_K.append(NMSE[0,0])
 
   print('L', NMSE_L)
