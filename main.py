@@ -98,8 +98,8 @@ def worker_oracle(inputs):
   Zcvx = [cp.Variable(prob.J, complex=True) for _ in I]
   exp = 0
   for i in range(len(I)):
-    a = cp.Constant((A[:,i][:,None]).real) + 1j*cp.Constant((A[:,i][:,None]).imag)
-    Phitemp = cp.Constant(Phiall[i].T.real) + 1j*cp.Constant(Phiall[i].T.imag)
+    a = cp.Constant((A[:,i][:,None]).real) + cp.multiply(1j,cp.Constant((A[:,i][:,None]).imag))
+    Phitemp = cp.Constant(Phiall[i].T.real) + cp.multiply(1j,cp.Constant(Phiall[i].T.imag))
     exp += (a @ (Zcvx[i] @ Phitemp)[:,None].T)
   obj = cp.norm(Y -exp)**2
   p = cp.Problem(cp.Minimize(obj))
