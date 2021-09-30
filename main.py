@@ -169,11 +169,11 @@ def worker(inputs):
   Phi = cp.Constant(p.Phi.real) + 1j*cp.Constant(p.Phi.imag)
   Zcvx = cp.Variable(shape=(p.N,p.Ng),complex=True)
   Xcvx = cp.Variable(shape=(p.N,p.M),complex=True)
-  # obj = cp.norm(Y-p.A@Xcvx)**2 + lam1*cp.sum(cp.norm(Xcvx,p=2,axis=1)) + lam2*cp.norm(Zcvx, p=1)
-  obj = cp.norm(Y-p.A@(Zcvx@Phi.T))**2 + lam1*cp.sum(cp.norm(Zcvx@Phi.T,p=2,axis=1)) + lam2*cp.norm(Zcvx, p=1)
+  obj = cp.norm(Y-p.A@Xcvx)**2 + lam1*cp.sum(cp.norm(Xcvx,p=2,axis=1)) + lam2*cp.norm(Zcvx, p=1)
+  # obj = cp.norm(Y-p.A@(Zcvx@Phi.T))**2 + lam1*cp.sum(cp.norm(Zcvx@Phi.T,p=2,axis=1)) + lam2*cp.norm(Zcvx, p=1)  
   # set_trace()
-  # c = [Zcvx@Phi.T == Xcvx] # + [cp.imag(cp.matmul(Zcvx,p.Phi.T)) == cp.imag(Xcvx)]
-  prob = cp.Problem(cp.Minimize(obj))
+  c = [Zcvx@Phi.T == Xcvx] # + [cp.imag(cp.matmul(Zcvx,p.Phi.T)) == cp.imag(Xcvx)]
+  prob = cp.Problem(cp.Minimize(obj),c)
   prob.solve()
   Xhat = Zcvx.value @ (p.Phi.T)
   E.append({'Xhat':Xhat, 'Zhat':Zcvx.value, 'ind':ind})
