@@ -169,12 +169,14 @@ def worker(inputs):
   Phi = cp.Constant(p.Phi.real) + 1j*cp.Constant(p.Phi.imag)
   Zcvx = cp.Variable(shape=(p.N,p.Ng),complex=True)
   Xcvx = cp.Variable(shape=(p.N,p.M),complex=True)
-  obj = cp.norm(Y-p.A@Xcvx)**2 + lam1*cp.sum(cp.norm(Xcvx,p=2,axis=1)) + lam2*cp.norm(Zcvx, p=1)
+  # obj = cp.norm(Y-p.A@Xcvx)**2 + lam1*cp.sum(cp.norm(Xcvx,p=2,axis=1)) + lam2*cp.norm(Zcvx, p=1)
+  obj = cp.norm(Y-p.A@(Zcvx@Phi.T))**2 + lam1*cp.sum(cp.norm(Zcvx@Phi.T,p=2,axis=1)) + lam2*cp.norm(Zcvx, p=1)
   # set_trace()
-  c = [Zcvx@Phi.T == Xcvx] # + [cp.imag(cp.matmul(Zcvx,p.Phi.T)) == cp.imag(Xcvx)]
-  prob = cp.Problem(cp.Minimize(obj), c)
+  # c = [Zcvx@Phi.T == Xcvx] # + [cp.imag(cp.matmul(Zcvx,p.Phi.T)) == cp.imag(Xcvx)]
+  prob = cp.Problem(cp.Minimize(obj))
   prob.solve()
-  E.append({'Xhat':Xcvx.value, 'Zhat':Zcvx.value, 'ind':ind})
+  Xhat = Zcvx.value @ (p.Phi.T)
+  E.append({'Xhat':Xhat, 'Zhat':Zcvx.value, 'ind':ind})
 
 def worker3(inputs):
   E, p, Yall, Xall, lams1,lams2, ind = inputs
@@ -195,24 +197,29 @@ def worker3(inputs):
   E.append({'Xhat':Zcvx.value@p.Phi.T, 'Zhat':Zcvx.value, 'ind':ind})
 
 def worker2(inputs):
-  E, p, Yall, Xall, _, lams2, ind = inputs
+  E, p, Yall, Xall, lams1, lams2, ind = inputs
   i, j, nsamp = ind
   Y = Yall[nsamp]
+  lam1 = lams1[i]
   lam2 = lams2[j]
 
   Phi = cp.Constant(p.Phi.real) + cp.multiply(1j,cp.Constant(p.Phi.imag))
   # Phi = cp.Constant(p.Phi)
 
   Xcvx = cp.Variable(shape=(p.N,p.M),complex=True)
-  obj = cp.norm(Y-p.A@Xcvx)**2 + lam2*cp.sum(cp.norm(Xcvx,p=2,axis=1))
+  obj = cp.norm(Y-p.A@Xcvx)**2 + lam1*cp.sum(cp.norm(Xcvx,p=2,axis=1))
   prob = cp.Problem(cp.Minimize(obj))
   prob.solve()
 
-  Zcvx = cp.Variable(shape=(p.N,p.Ng),complex=True)
-  obj = cp.norm(Xcvx.value.T - Phi@(Zcvx.T))**2 + 0.1 * cp.norm(Zcvx, p=1)
-  prob = cp.Problem(cp.Minimize(obj))
-  prob.solve()
-  Xhat = Zcvx.value @ (p.Phi.T)
+  Xhat = Xcvx.value
+  
+  for n in range(p.N):
+    Zcvx = cp.Variable(shape=(p.Ng,),complex=True)
+    obj = cp.norm(Xhat[n] - Phi@Zcvx)**2 + lam2 * cp.norm(Zcvx, p=1)
+    prob = cp.Problem(cp.Minimize(obj))
+    prob.solve(solver='MOSEK',verbose=False)
+    Xhat[n] = Zcvx.value @ (p.Phi.T)
+
   E.append({'Xhat':Xhat, 'ind':ind})
 
 def worker4(inputs):
@@ -306,15 +313,15 @@ def mp(L,M,K,method):
   
   # print('SNR=', 10*np.log10(np.linalg.norm(A@X)**2/np.linalg.norm(noise)**2))
   res = []
-  # Nlam1 = 1
-  # lams1 = np.logspace(-2,0, Nlam1)
-  # Nlam2 = 5
-  # lams2 = np.logspace(-2,0, Nlam2)
+  Nlam1 = 5
+  lams1 = np.logspace(-3,0, Nlam1)
+  Nlam2 = 5
+  lams2 = np.logspace(-3,0, Nlam2)
 
-  Nlam1 = 1
-  lams1 = [0.1]
-  Nlam2 = 1
-  lams2 = [0.1]
+  # Nlam1 = 1
+  # lams1 = [0.1]
+  # Nlam2 = 1
+  # lams2 = [0.1]
 
 
   # p = problem(*(N,L,M,P,K,(M,1),channel_sparsity))
@@ -327,7 +334,7 @@ def mp(L,M,K,method):
 
   
   if method == 'cvx':
-    worker_handle = worker2
+    worker_handle = worker
   elif method == 'mfocuss':
     worker_handle = worker_mfocuss
   elif method == 'vampmmse':
@@ -629,7 +636,8 @@ if __name__ == '__main__':
 
   # LMK('mfocuss')
 
-  NMSE, lams1, lams2, L_M_K = mp(12,4,3, 'cvx')
+  NMSE, lams1, lams2, L_M_K = mp(12,8,3, 'cvx')
+  print(lams2)
   print(NMSE.squeeze())
   import sys
   sys.exit()
