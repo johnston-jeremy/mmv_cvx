@@ -185,8 +185,8 @@ def worker3(inputs):
   Phi = cp.Constant(p.Phi.real) + 1j*cp.Constant(p.Phi.imag)
   Zcvx = cp.Variable(shape=(p.N,p.Ng),complex=True)
   Xcvx = cp.Variable(shape=(p.N,p.M),complex=True)
-  # obj = lam1*cp.sum(cp.norm(Zcvx@Phi.T,p=2,axis=1)) + cp.norm(Zcvx, p=1)
-  obj = cp.sum(cp.norm(Xcvx,p=2,axis=1)) + cp.norm(Zcvx, p=1)
+  obj = lam1*cp.sum(cp.norm(Zcvx@Phi.T,p=2,axis=1)) + cp.norm(Zcvx, p=1)
+  # obj = cp.sum(cp.norm(Xcvx,p=2,axis=1)) + cp.norm(Zcvx, p=1)
   # set_trace()
   c = [Y == p.A@Xcvx] + [Zcvx@Phi.T == Xcvx] # + [cp.imag(cp.matmul(Zcvx,p.Phi.T)) == cp.imag(Xcvx)]
   # c = [cp.norm(Y - p.A@Zcvx@Phi.T)**2 <= lam2*cp.norm(Y)**2] # + [cp.imag(cp.matmul(Zcvx,p.Phi.T)) == cp.imag(Xcvx)]
@@ -195,16 +195,25 @@ def worker3(inputs):
   E.append({'Xhat':Zcvx.value@p.Phi.T, 'Zhat':Zcvx.value, 'ind':ind})
 
 def worker2(inputs):
-  E, p, Yall,Xall, _, lams2, ind = inputs
+  E, p, Yall, Xall, _, lams2, ind = inputs
   i, j, nsamp = ind
   Y = Yall[nsamp]
   lam2 = lams2[j]
+
+  Phi = cp.Constant(p.Phi.real) + cp.multiply(1j,cp.Constant(p.Phi.imag))
+  # Phi = cp.Constant(p.Phi)
 
   Xcvx = cp.Variable(shape=(p.N,p.M),complex=True)
   obj = cp.norm(Y-p.A@Xcvx)**2 + lam2*cp.sum(cp.norm(Xcvx,p=2,axis=1))
   prob = cp.Problem(cp.Minimize(obj))
   prob.solve()
-  E.append({'Xhat':Xcvx.value, 'ind':ind})
+
+  Zcvx = cp.Variable(shape=(p.N,p.Ng),complex=True)
+  obj = cp.norm(Xcvx.value.T - Phi@(Zcvx.T))**2 + 0.1 * cp.norm(Zcvx, p=1)
+  prob = cp.Problem(cp.Minimize(obj))
+  prob.solve()
+  Xhat = Zcvx.value @ (p.Phi.T)
+  E.append({'Xhat':Xhat, 'ind':ind})
 
 def worker4(inputs):
   E, p, Yall,Xall, _, lams2, ind = inputs
@@ -292,7 +301,8 @@ def mp(L,M,K,method):
   Yall = Ytest[0] + 1j*Ytest[1]
   Xall = Xtest[0] + 1j*Xtest[1]
   Nsamp = Xall.shape[0]
-  Nsamp = 1000
+  Nsamp = 1
+  # set_trace()
   
   # print('SNR=', 10*np.log10(np.linalg.norm(A@X)**2/np.linalg.norm(noise)**2))
   res = []
@@ -317,7 +327,7 @@ def mp(L,M,K,method):
 
   
   if method == 'cvx':
-    worker_handle = worker4
+    worker_handle = worker2
   elif method == 'mfocuss':
     worker_handle = worker_mfocuss
   elif method == 'vampmmse':
@@ -613,15 +623,16 @@ def LMK_jobs(method, *args):
 if __name__ == '__main__':
   # lam_tradeoff('cvx','L', 'M', 'K')
   
-  LMK('oracle','L','M','K')
-  import sys
-  sys.exit()
+  # LMK('cvx','M')
+  # import sys
+  # sys.exit()
 
   # LMK('mfocuss')
 
-  NMSE, lams1, lams2, L_M_K = mp(12,8,3, 'oracle')
+  NMSE, lams1, lams2, L_M_K = mp(12,4,3, 'cvx')
   print(NMSE.squeeze())
-  set_trace()
+  import sys
+  sys.exit()
 
   M = 4
   L = 12
