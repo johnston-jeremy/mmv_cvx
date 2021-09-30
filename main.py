@@ -146,12 +146,13 @@ def worker3(inputs):
   Phi = cp.Constant(p.Phi.real) + 1j*cp.Constant(p.Phi.imag)
   Zcvx = cp.Variable(shape=(p.N,p.Ng),complex=True)
   Xcvx = cp.Variable(shape=(p.N,p.M),complex=True)
-  obj = lam1*cp.sum(cp.norm(Zcvx@Phi.T,p=2,axis=1)) + cp.norm(Zcvx, p=1)
+  # obj = lam1*cp.sum(cp.norm(Zcvx@Phi.T,p=2,axis=1)) + cp.norm(Zcvx, p=1)
+  obj = cp.sum(cp.norm(Xcvx,p=2,axis=1)) + cp.norm(Zcvx, p=1)
   # set_trace()
-  # c = [Y == p.A@Zcvx@Phi.T] # + [cp.imag(cp.matmul(Zcvx,p.Phi.T)) == cp.imag(Xcvx)]
-  c = [cp.norm(Y - p.A@Zcvx@Phi.T)**2 <= lam2*cp.norm(Y)**2] # + [cp.imag(cp.matmul(Zcvx,p.Phi.T)) == cp.imag(Xcvx)]
+  c = [Y == p.A@Xcvx] + [Zcvx@Phi.T == Xcvx] # + [cp.imag(cp.matmul(Zcvx,p.Phi.T)) == cp.imag(Xcvx)]
+  # c = [cp.norm(Y - p.A@Zcvx@Phi.T)**2 <= lam2*cp.norm(Y)**2] # + [cp.imag(cp.matmul(Zcvx,p.Phi.T)) == cp.imag(Xcvx)]
   prob = cp.Problem(cp.Minimize(obj), c)
-  prob.solve()
+  prob.solve(solver='MOSEK')
   E.append({'Xhat':Zcvx.value@p.Phi.T, 'Zhat':Zcvx.value, 'ind':ind})
 
 def worker2(inputs):
@@ -276,8 +277,8 @@ def mp(L,M,K,method):
         ind.append((i,j,nsamp))
 
   
-  if method == 'admm':
-    worker_handle = worker2
+  if method == 'cvx':
+    worker_handle = worker3
   elif method == 'mfocuss':
     worker_handle = worker_mfocuss
   elif method == 'vampmmse':
@@ -439,11 +440,11 @@ def LMK(method, *args):
     plt.show()
 
 if __name__ == '__main__':
-  # lam_tradeoff('admm','L', 'M', 'K')
+  # lam_tradeoff('cvx','L', 'M', 'K')
   
-  # LMK('vampmmse','L', 'M', 'K')
-  # import sys
-  # sys.exit()
+  LMK('cvx','L', 'M', 'K')
+  import sys
+  sys.exit()
 
   # LMK('mfocuss')
 
