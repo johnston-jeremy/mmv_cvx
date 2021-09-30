@@ -21,11 +21,11 @@ params_mmse[(50,12,4,3,2,10)] = 0.3 # 50 iter
 params_mmse[(50,12,12,3,2,10)] = 0.3 # 100 iter
 params_mmse[(50,12,16,3,2,10)] = 0.3 # 100 iter
 # K
-params_mmse[(50,12,8,4,2,10)] = 0.3 # 100 iter
-params_mmse[(50,12,8,5,2,10)] = 0.3 # 100 iter
-params_mmse[(50,12,8,6,2,10)] = 0.5 # 100 iter
-params_mmse[(50,12,8,7,2,10)] = 0.5 # 100 iter
-params_mmse[(50,12,8,8,2,10)] = 0.3 # 100 iter
+params_mmse[(50,12,8,4,2,10)] = 1 # 0.3 # 100 iter
+params_mmse[(50,12,8,5,2,10)] = 1 #0.3 # 100 iter
+params_mmse[(50,12,8,6,2,10)] = 1 #0.5 # 100 iter
+params_mmse[(50,12,8,7,2,10)] = 1 # 0.5 # 100 iter
+params_mmse[(50,12,8,8,2,10)] = 1 # 0.3 # 100 iter
 # SNR
 params_mmse[(50,12,8,3,2,0)] = 0.3 # 100 iter
 params_mmse[(50,12,8,3,2,5)] = 0.3 # 100 iter
@@ -440,9 +440,9 @@ def LMK(method, *args):
 
 if __name__ == '__main__':
   # lam_tradeoff('admm','L', 'M', 'K')
-  # LMK('oracle','L','M','K')
-  # import sys
-  # sys.exit()
+  LMK('vampmmse','K')
+  import sys
+  sys.exit()
   # LMK('mfocuss')
 
   # NMSE, lams1, lams2, L_M_K = mp(12,8,3, 'oracle')
