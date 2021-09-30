@@ -66,8 +66,21 @@ def f1():
   plt.plot(SNRs,res)
   plt.show()
 
+def worker_oracle(inputs):
+  E, prob, Yall, Xall,lams1,lams2, ind = inputs
+  i, j, nsamp = ind
+  Y = Yall[nsamp]
+  X = Xall[nsamp]
+
+  I = np.where(np.linalg.norm(X, axis=1) > 0)[0]
+  # print(I)
+  Xhat = np.zeros((prob.N,prob.M), dtype=complex)
+  Xhat[I] = np.linalg.pinv(prob.A[:,np.array(I)])@Y
+
+  E.append({'Xhat':Xhat, 'ind':ind})
+
 def worker_omp(inputs):
-  E, prob, Yall, lams1,lams2, ind = inputs
+  E, prob, Yall, Xall,lams1,lams2, ind = inputs
   i, j, nsamp = ind
   Y = Yall[nsamp]
   A = prob.A
@@ -84,16 +97,15 @@ def worker_omp(inputs):
   X[I] = np.linalg.pinv(A[:,np.array(I)])@Y
   E.append({'Xhat':X, 'ind':ind})
 
-
 def worker_vampmmse(inputs):
-  E, prob, Yall, lams1,lams2, ind = inputs
+  E, prob, Yall,Xall, lams1,lams2, ind = inputs
   i, j, nsamp = ind
   Y = Yall[nsamp]
   X = vamp(Y, prob, onsager=1)
   E.append({'Xhat':X, 'ind':ind})
 
 def worker_mfocuss(inputs):
-  E, prob, Yall, lams1,lams2, ind = inputs
+  E, prob, Yall, Xall,lams1,lams2, ind = inputs
   i, j, nsamp = ind
   Y = Yall[nsamp]
   Xk = np.linalg.pinv(prob.A)@Y
@@ -109,10 +121,8 @@ def worker_mfocuss(inputs):
       break
   E.append({'Xhat':Xk, 'ind':ind})
   
-
-
 def worker(inputs):
-  E, p, Yall, lams1,lams2, ind = inputs
+  E, p, Yall, Xall, lams1,lams2, ind = inputs
   i, j, nsamp = ind
   Y = Yall[nsamp]
   lam1, lam2 = lams1[i], lams2[j]
@@ -145,7 +155,7 @@ def worker3(inputs):
   E.append({'Xhat':Zcvx.value@p.Phi.T, 'Zhat':Zcvx.value, 'ind':ind})
 
 def worker2(inputs):
-  E, p, Yall, _, lams2, ind = inputs
+  E, p, Yall,Xall, _, lams2, ind = inputs
   i, j, nsamp = ind
   Y = Yall[nsamp]
   lam2 = lams2[j]
@@ -157,7 +167,7 @@ def worker2(inputs):
   E.append({'Xhat':Xcvx.value, 'ind':ind})
 
 def worker4(inputs):
-  E, p, Yall, _, lams2, ind = inputs
+  E, p, Yall,Xall, _, lams2, ind = inputs
   i, _, nsamp = ind
   Y = Yall[nsamp]
 
@@ -273,7 +283,7 @@ def mp(L,M,K,method):
   elif method == 'vampmmse':
     ksi = 1
     omega = p.N/p.L
-    # epsilon = p.K/p.N
+    epsilon = p.K/p.N
     p.maxiter = 500
     damp1 = 0.6
     damp2 = 0
@@ -286,11 +296,13 @@ def mp(L,M,K,method):
     worker_handle = worker_vampmmse
   elif method == 'omp':
     worker_handle = worker_omp
+  elif method == 'oracle':
+    worker_handle = worker_oracle
 
   manager = Manager()
   E = manager.list()
   Nworker = Nlam1*Nlam2*Nsamp
-  inputs = list(zip([E]*Nworker, [p]*Nworker, [Yall]*Nworker, [lams1]*Nworker, [lams2]*Nworker, ind))
+  inputs = list(zip([E]*Nworker, [p]*Nworker, [Yall]*Nworker, [Xall]*Nworker, [lams1]*Nworker, [lams2]*Nworker, ind))
 
   with Pool() as pool:
     for _ in tqdm.tqdm(pool.imap_unordered(worker_handle, inputs), total=len(inputs)):
@@ -428,25 +440,24 @@ def LMK(method, *args):
 
 if __name__ == '__main__':
   # lam_tradeoff('admm','L', 'M', 'K')
-  LMK('admm','K')
-  import sys
-  sys.exit()
+  # LMK('oracle','L','M','K')
+  # import sys
+  # sys.exit()
   # LMK('mfocuss')
 
-  NMSE, lams1, lams2, L_M_K = mp(12,8,3, 'omp')
-  print(NMSE.squeeze())
-  set_trace()
+  # NMSE, lams1, lams2, L_M_K = mp(12,8,3, 'oracle')
+  # print(NMSE.squeeze())
+  # set_trace()
 
   M = 8
   L = 12
-  K = 5
+  K = 3
   method = 'vampmmse'
   res = []
   betas = np.logspace(-2,1,100)
-  epsilon = 0.03
-  for params_mmse[(50,12,8,5,2,10)] in betas:
+  for params_mmse[(50,12,8,K,2,10)] in betas:
   # for epsilon in betas:
-    print(params_mmse[(50,12,8,5,2,10)])
+    print(params_mmse[(50,12,8,K,2,10)])
     # print(epsilon)
     NMSE, lams1, lams2, L_M_K = mp(L, M, K, method)
     res.append(NMSE.squeeze())
