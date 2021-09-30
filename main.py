@@ -278,7 +278,7 @@ def mp(L,M,K,method):
 
   
   if method == 'cvx':
-    worker_handle = worker3
+    worker_handle = worker4
   elif method == 'mfocuss':
     worker_handle = worker_mfocuss
   elif method == 'vampmmse':
@@ -319,6 +319,84 @@ def mp(L,M,K,method):
   # NMSE2 = 10*np.log10(np.mean(NMSE2, axis=-1))
 
   return NMSE, lams1, lams2, (L,M,K)
+
+def mp_jobs(L,M,K,method):
+  print(L,M,K,method)
+  # M = 8
+  N = 50
+  # L = 12
+  # K = 3
+  P = 2*M
+  channel_sparsity = 2
+  # A = np.random.normal(size=(L,N)) + 1j*np.random.normal(size=(L,N))
+  # Phi = np.random.normal(size=(P,M)) + 1j*np.random.normal(size=(P,M))
+  # X = np.zeros((N,M))
+  # X[np.random.permutation(N)[:K]] = np.random.normal(size=(K,M))
+  # noise = np.random.normal(size=(L,M))/5
+  # Y = A@X + noise
+
+  # SNRs = [10,15]
+  SNR = 10
+  # Nsamp = 10
+
+  # Yall, Zall, sigma = gen_c_2(p,Nsamp,channel_sparsity,N,L,M,P,K,SNR)
+  D = np.load('./testdata/data_L='+str(L)+'_M='+str(M)+'_K='+str(K)+'_SNR='+str(SNR)+'.npy', allow_pickle=True).item()
+  # set_trace()
+  Ytest, Xtest, p = D['Y'], D['X'], D['p']
+  Yall = Ytest[0] + 1j*Ytest[1]
+  Xall = Xtest[0] + 1j*Xtest[1]
+  Nsamp = Xall.shape[0]
+  Nsamp = 12
+  
+  # print('SNR=', 10*np.log10(np.linalg.norm(A@X)**2/np.linalg.norm(noise)**2))
+  res = []
+  # Nlam1 = 1
+  # lams1 = np.logspace(-2,0, Nlam1)
+  # Nlam2 = 5
+  # lams2 = np.logspace(-2,0, Nlam2)
+
+  Nlam1 = 1
+  lams1 = [0.1]
+  Nlam2 = 1
+  lams2 = [0.1]
+
+
+  # p = problem(*(N,L,M,P,K,(M,1),channel_sparsity))
+
+  ind = []
+  for i in range(Nlam1):
+    for j in range(Nlam2):
+      for nsamp in range(Nsamp):
+        ind.append((i,j,nsamp))
+
+  
+  if method == 'cvx':
+    worker_handle = worker3
+  elif method == 'mfocuss':
+    worker_handle = worker_mfocuss
+  elif method == 'vampmmse':
+    ksi = 1
+    omega = p.N/p.L
+    epsilon = p.K/p.N
+    p.maxiter = 500
+    damp1 = 0.6
+    damp2 = 0
+    p.lam = 1
+    p.damp = damp1, damp2
+    p.denoiser = 'mmse'
+    p.onsager = 1
+    p.beta = params_mmse[(N,L,M,K,channel_sparsity,SNR)]
+    p.params = omega, epsilon, p.beta, p.sigma_noise, ksi, p.maxiter, p.alpha
+    worker_handle = worker_vampmmse
+  elif method == 'omp':
+    worker_handle = worker_omp
+  elif method == 'oracle':
+    worker_handle = worker_oracle
+
+  manager = Manager()
+  E = manager.list()
+  Nworker = Nlam1*Nlam2*Nsamp
+  inputs = list(zip([E]*Nworker, [p]*Nworker, [Yall]*Nworker, [Xall]*Nworker, [lams1]*Nworker, [lams2]*Nworker, ind))
 
 def plot_nmse(ax, NMSE, lams1, lams2, LMK):
   L,M,K = LMK
