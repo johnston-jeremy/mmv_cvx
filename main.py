@@ -337,7 +337,9 @@ def mp(L,M,K,method):
   elif method == 'omp':
     worker_handle = worker_omp
   elif method == 'oracle':
+    Nsamp = 1000
     Yall,Xall, Zall,_ = gen_c_2(p, Nsamp,channel_sparsity,N,L,M,P,K,SNR)
+    np.save('./testdata/data_L='+str(L)+'_M='+str(M)+'_K='+str(K)+'_SNR='+str(SNR)+'.npy',{'Y':Yall,'X':Xall, 'Z':Zall, 'p':p})
     worker_handle = worker_oracle
 
   manager = Manager()
@@ -609,7 +611,7 @@ def LMK_jobs(method, *args):
 if __name__ == '__main__':
   # lam_tradeoff('cvx','L', 'M', 'K')
   
-  LMK('oracle','L', 'M', 'K')
+  LMK('oracle','L','M','K')
   import sys
   sys.exit()
 
