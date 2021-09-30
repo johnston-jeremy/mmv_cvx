@@ -138,7 +138,7 @@ def worker(inputs):
   E.append({'Xhat':Xcvx.value, 'Zhat':Zcvx.value, 'ind':ind})
 
 def worker3(inputs):
-  E, p, Yall, lams1,lams2, ind = inputs
+  E, p, Yall, Xall, lams1,lams2, ind = inputs
   i, j, nsamp = ind
   Y = Yall[nsamp]
   lam1, lam2 = lams1[i], lams2[j]
