@@ -77,7 +77,7 @@ def gen_c_2(p,Nsamp,channel_sparsity,N,L,M,Ng,K,SNR):
   epsilon = K/N
 
   Y = np.zeros((Nsamp,L,M),dtype=complex)
-  # X = np.zeros((Nsamp,N,M),dtype=complex)
+  X = np.zeros((Nsamp,N,M),dtype=complex)
   Z = np.zeros((Nsamp,N,Ng),dtype=complex)
 
   for j in range(Nsamp):
@@ -101,11 +101,11 @@ def gen_c_2(p,Nsamp,channel_sparsity,N,L,M,Ng,K,SNR):
     # ind = np.random.permutation(N)[:K]
     # X[j,ind] = h
     
-    S = np.matmul(Z[j],Phi.T)
-    noise, sigma = scaled_noise_c(A,S,SNR)
+    X[j] = np.matmul(Z[j],Phi.T)
+    noise, sigma = scaled_noise_c(A,X[j],SNR)
 
-    Y[j] = np.matmul(A, S) + noise
+    Y[j] = np.matmul(A, X[j]) + noise
     # set_trace()
     
     
-  return Y, Z, sigma
+  return Y, X, Z, sigma

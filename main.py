@@ -67,16 +67,55 @@ def f1():
   plt.show()
 
 def worker_oracle(inputs):
-  E, prob, Yall, Xall,lams1,lams2, ind = inputs
+  E, prob, Yall, Xall, Zall, lams1,lams2, ind = inputs
   i, j, nsamp = ind
   Y = Yall[nsamp]
   X = Xall[nsamp]
+  Z = Zall[nsamp]
 
   I = np.where(np.linalg.norm(X, axis=1) > 0)[0]
   # print(I)
   Xhat = np.zeros((prob.N,prob.M), dtype=complex)
-  Xhat[I] = np.linalg.pinv(prob.A[:,np.array(I)])@Y
+  # Xhat[I] = np.linalg.pinv(prob.A[:,np.array(I)])@Y
+  A = prob.A[:,np.array(I)]
+  # A = prob.A
+  # B = prob.Phi.T
+  # Zhat = np.linalg.pinv(prob.A[:,np.array(I)])@Y@np.linalg.pinv(prob.Phi.T)
+  # Zhat = np.linalg.inv(A.T.conj()@A)@A.T.conj()@Y@np.linalg.pinv(B) #B.T.conj()@np.linalg.inv(B@B.T.conj())
+  Zhat = np.zeros((prob.N,prob.Ng), dtype=complex)
+  Phiall = []
+  for n in I:
+    Ipaths = np.where(np.abs(Z[n]) > 0)[0]
+    Phiall.append(prob.Phi[:,Ipaths])
 
+    # Phi = prob.Phi[:,Ipaths]
+    # B = Phi.T
+
+    # rhs = A.T.conj()@Y@B.T.conj()@np.linalg.inv(B@B.T.conj())
+
+    # rhs = (np.linalg.pinv(A.T.conj()@A)@(A.T.conj())@Y@(B.T.conj())).T
+    # Zhat[n,Ipaths] = np.diag((np.linalg.pinv(B.conj()@B.T) @ rhs).T)
+  Zcvx = [cp.Variable(prob.J, complex=True) for _ in I]
+  exp = 0
+  for i in range(len(I)):
+    a = cp.Constant((A[:,i][:,None]).real) + 1j*cp.Constant((A[:,i][:,None]).imag)
+    Phitemp = cp.Constant(Phiall[i].T.real) + 1j*cp.Constant(Phiall[i].T.imag)
+    exp += a * (Zcvx[i] @ Phitemp)[:,None].T
+  obj = cp.norm(Y -exp)**2
+  p = cp.Problem(cp.Minimize(obj))
+  p.solve()
+  # i = 0
+  # for r in rhs.T:
+  #   Zhat[:,i] = np.linalg.solve(A.T.conj()@A, r)
+  #   i += 1
+  # Zhat = np.linalg.solve(B.conj()@B.T, rhs).T
+  # Zhat[I] = (np.linalg.pinv(B.conj()@B.T) @ rhs).T
+  for i in range(len(I)):
+    Ipaths = np.where(np.abs(Z[I[i]]) > 0)[0]
+    Zhat[I[i],Ipaths] = Zcvx[i].value
+  Xhat = Zhat @ prob.Phi.T
+  # Zhat = np.linalg.pinv(prob.Phi)@Xhat.T
+  # Xhat = (prob.Phi@Zhat).T
   E.append({'Xhat':Xhat, 'ind':ind})
 
 def worker_omp(inputs):
@@ -298,12 +337,16 @@ def mp(L,M,K,method):
   elif method == 'omp':
     worker_handle = worker_omp
   elif method == 'oracle':
+    Yall,Xall, Zall,_ = gen_c_2(p, Nsamp,channel_sparsity,N,L,M,P,K,SNR)
     worker_handle = worker_oracle
 
   manager = Manager()
   E = manager.list()
   Nworker = Nlam1*Nlam2*Nsamp
-  inputs = list(zip([E]*Nworker, [p]*Nworker, [Yall]*Nworker, [Xall]*Nworker, [lams1]*Nworker, [lams2]*Nworker, ind))
+  if method == 'oracle':
+    inputs = list(zip([E]*Nworker, [p]*Nworker, [Yall]*Nworker, [Xall]*Nworker, [Zall]*Nworker, [lams1]*Nworker, [lams2]*Nworker, ind))
+  else:
+    inputs = list(zip([E]*Nworker, [p]*Nworker, [Yall]*Nworker, [Xall]*Nworker, [lams1]*Nworker, [lams2]*Nworker, ind))
 
   with Pool() as pool:
     for _ in tqdm.tqdm(pool.imap_unordered(worker_handle, inputs), total=len(inputs)):
@@ -566,15 +609,15 @@ def LMK_jobs(method, *args):
 if __name__ == '__main__':
   # lam_tradeoff('cvx','L', 'M', 'K')
   
-  # LMK('omp','L', 'M', 'K')
-  # import sys
-  # sys.exit()
+  LMK('oracle','L', 'M', 'K')
+  import sys
+  sys.exit()
 
   # LMK('mfocuss')
 
-  # NMSE, lams1, lams2, L_M_K = mp(12,8,3, 'oracle')
-  # print(NMSE.squeeze())
-  # set_trace()
+  NMSE, lams1, lams2, L_M_K = mp(12,8,3, 'oracle')
+  print(NMSE.squeeze())
+  set_trace()
 
   M = 4
   L = 12
