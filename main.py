@@ -452,11 +452,11 @@ if __name__ == '__main__':
   # set_trace()
 
   M = 8
-  L = 4
+  L = 8
   K = 3
   method = 'vampmmse'
   res = []
-  betas = np.logspace(-2,-1,27)
+  betas = np.logspace(-1.5,-0.5,50)
   for params_mmse[(50,L,M,K,2,10)] in betas:
   # for epsilon in betas:
     print(params_mmse[(50,L,M,K,2,10)])
