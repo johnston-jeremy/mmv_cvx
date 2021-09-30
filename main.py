@@ -311,7 +311,7 @@ def mp(L,M,K,method):
   Xall = Xtest[0] + 1j*Xtest[1]
   
   Nsamp = Xall.shape[0]
-  Nsamp = 24
+  Nsamp = 12
   # set_trace()
   
   # print('SNR=', 10*np.log10(np.linalg.norm(A@X)**2/np.linalg.norm(noise)**2))
@@ -633,7 +633,7 @@ def LMK_jobs(method, *args):
 if __name__ == '__main__':
   # lam_tradeoff('cvx','L', 'M', 'K')
   
-  LMK('cvx','K')
+  LMK('cvx','L','M','K')
   import sys
   sys.exit()
 
