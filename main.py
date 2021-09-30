@@ -100,7 +100,7 @@ def worker_oracle(inputs):
   for i in range(len(I)):
     a = cp.Constant((A[:,i][:,None]).real) + 1j*cp.Constant((A[:,i][:,None]).imag)
     Phitemp = cp.Constant(Phiall[i].T.real) + 1j*cp.Constant(Phiall[i].T.imag)
-    exp += a * (Zcvx[i] @ Phitemp)[:,None].T
+    exp += (a @ (Zcvx[i] @ Phitemp)[:,None].T)
   obj = cp.norm(Y -exp)**2
   p = cp.Problem(cp.Minimize(obj))
   p.solve()
