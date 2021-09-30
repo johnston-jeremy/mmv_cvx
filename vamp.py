@@ -382,7 +382,7 @@ def vamp(Y, p, onsager):
       tau = np.sqrt(sum_gain)*np.sqrt(1/(M*L))
 
     if t > 0:
-      if np.linalg.norm(X-Xprev)/np.linalg.norm(Xprev) <= 0.001:
+      if np.linalg.norm(X-Xprev)/np.linalg.norm(Xprev) <= 1e-6:
         break
     # p2.append(np.sum(grad))
     # p1.append(np.sum(np.abs(X-Xtrue)**2)/np.sum(np.abs(Xtrue)**2))
