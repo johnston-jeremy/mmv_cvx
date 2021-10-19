@@ -716,8 +716,8 @@ def main():
   Llist = []
   Mlist = [4,8,12,16]
   Mlist = []
-  # Klist = [3,4,5,6,7,8]
-  Klist = [5,6,7,8]
+  Klist = [3,4,5,6,7,8]
+  # Klist = [5,6,7,8]
   # Klist = [7]
   for L in Llist:
     M = 8
