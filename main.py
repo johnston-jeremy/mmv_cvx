@@ -404,7 +404,7 @@ def mp_samples(method, Yall, Xall, Zall, p):
   for e in E:
     nsamp = e['ind']
     NMSE[nsamp] = np.linalg.norm(e['Xhat']-Xall[nsamp])**2/np.linalg.norm(Xall[nsamp])**2
-  print(NMSE)
+  # print(NMSE)
   NMSE = 10*np.log10(np.mean(NMSE))
 
   return NMSE
@@ -596,7 +596,7 @@ def LMK(method, data, *args):
   for K in Klist:
     Yall, Xall, Zall, p = data[(L,M,K)]
     NMSE = mp_samples(method, Yall, Xall, Zall, p)
-    # print(NMSE)
+    print(NMSE)
     NMSE_K.append(NMSE)
 
   if len(NMSE_L) > 0: print('L', NMSE_L)

@@ -70,7 +70,7 @@ class problem():
     # Phi = np.matmul(Phi,np.diag(1/np.sqrt(np.sum(np.abs(Phi)**2,axis=0))))
 
     w,v = np.linalg.eig( np.matmul( np.conj(Phi.T), Phi ) )
-    alpha = 0.8/max(np.abs(w))
+    alpha = 0.5/max(np.abs(w))
 
     # import pdb; pdb.set_trace()
     self.alpha = np.float32(alpha)
