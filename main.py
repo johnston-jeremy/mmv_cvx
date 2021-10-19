@@ -404,6 +404,7 @@ def mp_samples(method, Yall, Xall, Zall, p):
   for e in E:
     nsamp = e['ind']
     NMSE[nsamp] = np.linalg.norm(e['Xhat']-Xall[nsamp])**2/np.linalg.norm(Xall[nsamp])**2
+  print(NMSE)
   NMSE = 10*np.log10(np.mean(NMSE))
 
   return NMSE
