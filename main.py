@@ -615,6 +615,7 @@ def LMK(method, data, *args):
       axK.plot(Klist, NMSE_K)
 
     plt.show()
+  return NMSE_L, NMSE_M, NMSE_K
 
 def LMK_jobs(method, *args):
   M = 8
@@ -707,7 +708,7 @@ def lams_experiment():
   # print(NMSE)
 
 def main():
-  Nsamp = 500
+  Nsamp = 100
 
   data = {}
   # lam_tradeoff('cvx','L', 'M', 'K')
@@ -738,7 +739,15 @@ def main():
   data['Mlist'] = Mlist
   data['Klist'] = Klist
 
-  LMK('vampista', data)
+  NMSE_L, NMSE_M, NMSE_K = {'var':'L'}, {'var':'M'}, {'var':'K'}
+  for method in ['vampmmse', 'vampista']:
+    NMSE_L[method], NMSE_M[method], NMSE_K[method] = LMK(method, data)
+
+  for n in [NMSE_L, NMSE_M, NMSE_K]:
+    print(n['var'])
+    for method in ['vampmmse', 'vampista']:
+      print(method, n[method])
+    
 
 if __name__ == '__main__':
   main()
