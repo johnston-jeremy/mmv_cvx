@@ -329,36 +329,36 @@ def vamp_setup(p, mode):
     ksi = 1
     omega = p.N/p.L
     epsilon = p.K/p.N
-    maxiter = 100
-    p.maxiter = maxiter
-    p.params = omega, epsilon, p.beta, None, ksi, maxiter, p.alpha
+    p.maxiter_vamp = 1000
 
     damp1 = 0.6
     damp2 = 0
     p.damp = damp1, damp2
     p.lam = get_method_params()[mode][(p.N,p.L,p.M,p.K,p.J,p.SNR)]
     p.damp_init = 0.7
-    p.MAXITER = 20
+    p.maxiter_ista = 20
     p.onsager = 0
     p.istawarmstart = True
     p.denoiser = 'ista'
   
   elif mode == 'vampmmse':
-    ksi = 1
-    omega = p.N/p.L
-    epsilon = p.K/p.N
-    p.maxiter = 500
+    p.epsilon = p.K/p.N
+    p.maxiter_vamp = 1000
     damp1 = 0.6
     damp2 = 0
     p.lam = 1
     p.damp = damp1, damp2
     p.denoiser = 'mmse'
-    p.onsager = 1
     p.beta = get_method_params()[mode][(p.N,p.L,p.M,p.K,p.J,p.SNR)]
-    p.params = omega, epsilon, p.beta, None, ksi, p.maxiter, p.alpha
-  
+
+def admm3_setup(p):
+  p.sigma, p.mu, p.rho, p.taux, p.tauz = get_method_params()['admm3'][(p.N,p.L,p.M,p.K,p.J,p.SNR)]
+  p.maxiter = 1000
+
 def mp_samples(method, Yall, Xall, Zall, p):
   print(method)
+
+  p.tol = 1e-6
 
   # D = np.load('./testdata/data_L='+str(L)+'_M='+str(M)+'_K='+str(K)+'_SNR='+str(SNR)+'.npy', allow_pickle=True).item()
   # set_trace()
@@ -369,7 +369,6 @@ def mp_samples(method, Yall, Xall, Zall, p):
   # Xall = Xtest[0] + 1j*Xtest[1]
 
   Nsamp = Xall.shape[0]
-  
   ind = range(Nsamp)
 
   
@@ -383,6 +382,9 @@ def mp_samples(method, Yall, Xall, Zall, p):
   elif method == 'vampista':
     vamp_setup(p,method)
     worker_handle = worker_vamp
+  elif method == 'admm3':
+    admm3_setup(p)
+    worker_handle = worker_admm3
   elif method == 'omp':
     worker_handle = worker_omp
   elif method == 'oracle':
@@ -394,7 +396,7 @@ def mp_samples(method, Yall, Xall, Zall, p):
   if method == 'oracle':
     inputs = list(zip([E]*Nworker, [p]*Nworker, [Yall]*Nworker, [Xall]*Nworker, [Zall]*Nworker, ind))
   else:
-    inputs = list(zip([E]*Nworker, [p]*Nworker, [Yall]*Nworker, [Xall]*Nworker, ind))
+    inputs = list(zip([E]*Nworker, [p]*Nworker, Yall, ind))
 
   with Pool() as pool:
     for _ in tqdm.tqdm(pool.imap_unordered(worker_handle, inputs), total=len(inputs)):
@@ -739,13 +741,14 @@ def main():
   data['Mlist'] = Mlist
   data['Klist'] = Klist
 
+  methods = ['admm3','vampmmse', 'vampista']
   NMSE_L, NMSE_M, NMSE_K = {'var':'L'}, {'var':'M'}, {'var':'K'}
-  for method in ['vampmmse', 'vampista']:
+  for method in methods:
     NMSE_L[method], NMSE_M[method], NMSE_K[method] = LMK(method, data)
 
   for n in [NMSE_L, NMSE_M, NMSE_K]:
     print(n['var'])
-    for method in ['vampmmse', 'vampista']:
+    for method in methods:
       print(method, n[method])
     
 

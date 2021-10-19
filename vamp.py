@@ -13,7 +13,7 @@ def prox_l1_norm_c(x,kappa):
 
 def ista(X, p):
   Z = p.Z0
-  for _ in range(p.MAXITER):
+  for _ in range(p.maxiter_ista):
     temp1 = np.matmul(p.M1, Z)
     temp2 = np.matmul(p.M2,X.T)
     Z = prox_l1_norm_c(temp1 + temp2, p.alpha*p.lam)
@@ -27,7 +27,7 @@ def ista2(X, p, Z0):
   # used for MC Jacobian computation
   Z = Z0
 
-  for _ in range(p.MAXITER):
+  for _ in range(p.maxiter_ista):
     temp1 = np.matmul(p.M1, Z)
     temp2 = np.matmul(p.M2,X.T)
     Z = prox_l1_norm_c(temp1 + temp2, p.alpha*p.lam)
@@ -72,7 +72,7 @@ def vamp(Y, p):
   
   p.Z0 = np.zeros((N,Phi.shape[1]), dtype=complex).T
                                                       
-  for t in range(p.maxiter):
+  for t in range(p.maxiter_vamp):
     Xprev = X
     Xtilde = np.matmul(A.conj().T, R) + X
     if p.denoiser == 'ista':
@@ -100,7 +100,7 @@ def vamp(Y, p):
       tau = np.sqrt(sum_gain)*np.sqrt(1/(M*L))
 
     if t > 0:
-      if np.linalg.norm(X-Xprev)/np.linalg.norm(Xprev) <= 1e-6:
+      if np.linalg.norm(X-Xprev)/np.linalg.norm(Xprev) <= p.tol:
         break
 
   return X
@@ -112,10 +112,9 @@ def grad_denoise_MMSE(x, epsilon, beta, M, tau):
   return g1*g2*g3
 
 def denoise_MMSE(Xtilde, tau, p):
-  omega, epsilon, beta, _, ksi, _, _ = p.params
   beta = p.beta
+  epsilon = p.epsilon
   N,M = Xtilde.shape 
-  X = np.zeros_like(Xtilde)
     
   a = beta/(beta + tau**2)
   b = (1 - epsilon)/epsilon*((beta+tau**2)/tau**2)**M
