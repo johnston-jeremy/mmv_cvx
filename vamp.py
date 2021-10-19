@@ -87,7 +87,7 @@ def vamp(Y, p):
         X = np.matmul(p.Phi, Z).T
         if p.istagrad == 'mc':
           J = ista_grad_mc(X,Xtilde,p)
-          Rnew = Y - np.matmul(A, X) + onsager * (1-damp2) * (1/L) * np.matmul(R, J)
+          Rnew = Y - np.matmul(A, X) + (1-damp2) * (1/L) * np.matmul(R, J)
         R = (1-damp) * Rnew + damp * R
 
     if p.denoiser == 'mmse':
