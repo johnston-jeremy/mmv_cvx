@@ -10,7 +10,7 @@ from multiprocessing import Pool, Manager
 from workers import *
 
 def get_method_params():
-  # N,L,M,K,J,SNR
+  # N,L,M
   params_ista = {}
   # L
   params_ista[(50,4,8,3,2,10)] = 2.5
@@ -736,7 +736,7 @@ def main():
   data['Mlist'] = Mlist
   data['Klist'] = Klist
 
-  LMK('vampista', data, 'plot')
+  LMK('vampista', data)
 
 if __name__ == '__main__':
   main()
