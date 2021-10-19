@@ -103,35 +103,53 @@ def get_method_params():
 
   #  N,L,M,K,J,SNR
   params_admm1 = {}
-  # L
-  params_admm1[(50,4,8,3,2,10)] = 0.822, 0.072, 0.057 # 50 iter
-  params_admm1[(50,8,8,3,2,10)] = 0.057, 0.024, 0.339 # 50 iter
-  params_admm1[(50,12,8,3,2,10)] = 0.217, 0.057, 0.008 # 50 iter
-  params_admm1[(50,16,8,3,2,10)] = 0.217, 0.112, 0.006 # 50 iter
-  params_admm1[(50,20,8,3,2,10)] = 0.072, 0.03, 0.527 # 15 iter
-  # M
-  params_admm1[(50,12,4,3,2,10)] = 0.217, 0.057, 0.008 # 50 iter
-  params_admm1[(50,12,12,3,2,10)] = 0.217, 0.057, 0.008 # 100 iter
-  params_admm1[(50,12,16,3,2,10)] = 0.217, 0.057, 0.008 # 100 iter
+  # # L
+  # params_admm1[(50,4,8,3,2,10)] = 0.822, 0.072, 0.057 # 50 iter
+  # params_admm1[(50,8,8,3,2,10)] = 0.057, 0.024, 0.339 # 50 iter
+  # params_admm1[(50,12,8,3,2,10)] = 0.217, 0.057, 0.008 # 50 iter
+  # params_admm1[(50,16,8,3,2,10)] = 0.217, 0.112, 0.006 # 50 iter
+  # params_admm1[(50,20,8,3,2,10)] = 0.072, 0.03, 0.527 # 15 iter
+  # # M
+  # params_admm1[(50,12,4,3,2,10)] = 0.217, 0.057, 0.008 # 50 iter
+  # params_admm1[(50,12,12,3,2,10)] = 0.217, 0.057, 0.008 # 100 iter
+  # params_admm1[(50,12,16,3,2,10)] = 0.217, 0.057, 0.008 # 100 iter
   
-  # K
-  params_admm1[(50,12,8,4,2,10)] = 0.174, 0.057, 0.008 # 100 iter
-  params_admm1[(50,12,8,5,2,10)] = 0.09, 0.03, 0.339 # 100 iter
-  params_admm1[(50,12,8,6,2,10)] = 0.217, 0.112, 0.015 # 100 iter
-  params_admm1[(50,12,8,7,2,10)] = 0.174, 0.015, 0.339 # 100 iter
-  params_admm1[(50,12,8,8,2,10)] = 0.174, 0.024, 0.217 # 100 iter
+  # # K
+  # params_admm1[(50,12,8,4,2,10)] = 0.174, 0.057, 0.008 # 100 iter
+  # params_admm1[(50,12,8,5,2,10)] = 0.09, 0.03, 0.339 # 100 iter
+  # params_admm1[(50,12,8,6,2,10)] = 0.217, 0.112, 0.015 # 100 iter
+  # params_admm1[(50,12,8,7,2,10)] = 0.174, 0.015, 0.339 # 100 iter
+  # params_admm1[(50,12,8,8,2,10)] = 0.174, 0.024, 0.217 # 100 iter
 
-  params_admm1[(50,12,8,4,2,10)] = 0.217, 0.057, 0.1 # 100 iter
-  params_admm1[(50,12,8,5,2,10)] = 0.217, 0.057, 0.1 # 100 iter
-  params_admm1[(50,12,8,6,2,10)] = 0.217, 0.057, 0.1 # 100 iter
-  params_admm1[(50,12,8,7,2,10)] = 0.217, 0.057, 0.1 # 100 iter
-  params_admm1[(50,12,8,8,2,10)] = 0.217, 0.057, 0.1 # 100 iter
+  # params_admm1[(50,12,8,4,2,10)] = 0.217, 0.057, 0.1 # 100 iter
+  # params_admm1[(50,12,8,5,2,10)] = 0.217, 0.057, 0.1 # 100 iter
+  # params_admm1[(50,12,8,6,2,10)] = 0.217, 0.057, 0.1 # 100 iter
+  # params_admm1[(50,12,8,7,2,10)] = 0.217, 0.057, 0.1 # 100 iter
+  # params_admm1[(50,12,8,8,2,10)] = 0.217, 0.057, 0.1 # 100 iter
 
-  # SNR
-  params_admm1[(50,12,8,3,2,0)] = 0.822, 0.057, 0.006 # 100 iter
-  params_admm1[(50,12,8,3,2,5)] = 0.217, 0.015, 0.339 # 100 iter
-  params_admm1[(50,12,8,3,2,15)] = 0.003, 0.03, 0.217 # 150 iter
-  params_admm1[(50,12,8,3,2,20)] = 0.01, 0.046, 0.112 # 250 iter
+  # # SNR
+  # params_admm1[(50,12,8,3,2,0)] = 0.822, 0.057, 0.006 # 100 iter
+  # params_admm1[(50,12,8,3,2,5)] = 0.217, 0.015, 0.339 # 100 iter
+  # params_admm1[(50,12,8,3,2,15)] = 0.003, 0.03, 0.217 # 150 iter
+  # params_admm1[(50,12,8,3,2,20)] = 0.01, 0.046, 0.112 # 250 iter
+
+
+  params_admm1[( 50, 12, 4, 3, 2, 10, )] = 0.171, 0.058, 0.045,
+  params_admm1[( 50, 12, 8, 3, 2,10, )] = 0.171, 0.076, 0.058,
+  params_admm1[( 50, 12, 12, 3, 2,10, )] = 0.223, 0.382, 0.076,
+  params_admm1[( 50, 12, 16, 3,2, 10, )] = 0.171, 0.045, 0.223,
+  params_admm1[( 50, 12, 8, 4,2, 10, )] = 0.292, 0.076, 0.5,
+  params_admm1[( 50, 12, 8, 5, 2,10, )] = 0.223, 0.292, 0.171,
+  params_admm1[( 50, 12, 8, 6, 2,10, )] = 0.1, 0.026, 0.131,
+  params_admm1[( 50, 12, 8, 7, 2,10, )] = 0.292, 0.034, 0.223,
+  params_admm1[( 50, 12, 8, 8, 2,10, )] = 0.223, 0.034, 0.1,
+  params_admm1[( 50, 4, 8, 3, 2,10, )] = 0.654, 0.292, 0.131,
+  params_admm1[( 50, 8, 8, 3, 2,10, )] = 0.223, 0.058, 0.1,
+  # params_admm1[( 50, 16, 8, 3, 2,10, )] = 0.076, 0.02, 0.654,
+  # params_admm1[( 50, 20, 8, 3, 2,10, )] = 0.076, 0.026, 0.223,
+
+  params_admm1[( 50, 16, 8, 3, 2, 10, )] = 0.171, 0.223, 0.131,
+  params_admm1[( 50, 20, 8, 3, 2, 10, )] = 0.292, 1.119, 0.5,
   
 
   
@@ -355,6 +373,11 @@ def admm3_setup(p):
   p.sigma, p.mu, p.rho, p.taux, p.tauz = get_method_params()['admm3'][(p.N,p.L,p.M,p.K,p.J,p.SNR)]
   p.maxiter = 1000
 
+def admm1_setup(p):
+  p.mu, p.beta, p.taux = get_method_params()['admm1'][(p.N,p.L,p.M,p.K,p.J,p.SNR)]
+  p.mu, p.beta, p.taux, p.gamma = 1e-5, 0.2, 0.8, 0.5
+  p.maxiter = 1000
+
 def mp_samples(method, Yall, Xall, Zall, p):
   print(method)
 
@@ -385,6 +408,9 @@ def mp_samples(method, Yall, Xall, Zall, p):
   elif method == 'admm3':
     admm3_setup(p)
     worker_handle = worker_admm3
+  elif method == 'admm1':
+    admm1_setup(p)
+    worker_handle = worker_admm1
   elif method == 'omp':
     worker_handle = worker_omp
   elif method == 'oracle':
@@ -710,7 +736,7 @@ def lams_experiment():
   # print(NMSE)
 
 def main():
-  Nsamp = 100
+  Nsamp = 2
 
   data = {}
   # lam_tradeoff('cvx','L', 'M', 'K')
@@ -741,7 +767,8 @@ def main():
   data['Mlist'] = Mlist
   data['Klist'] = Klist
 
-  methods = ['admm3','vampmmse', 'vampista']
+  # methods = ['admm1','admm3','vampmmse', 'vampista']
+  methods = ['admm1']
   NMSE_L, NMSE_M, NMSE_K = {'var':'L'}, {'var':'M'}, {'var':'K'}
   for method in methods:
     NMSE_L[method], NMSE_M[method], NMSE_K[method] = LMK(method, data)

@@ -7,6 +7,7 @@ from data import gen_c
 from problem import problem
 from pdb import set_trace
 from admm3 import admm_problem3
+from admm1 import admm_problem1
 
 def worker_oracle(inputs):
   E, prob, Yall, Xall, Zall, lams1,lams2, ind = inputs
@@ -86,6 +87,11 @@ def worker_vamp(inputs):
 def worker_admm3(inputs):
   E, prob, Y, nsamp = inputs
   X = admm_problem3(Y, prob)
+  E.append({'Xhat':X, 'ind':nsamp})
+
+def worker_admm1(inputs):
+  E, prob, Y, nsamp = inputs
+  X = admm_problem1(Y, prob)
   E.append({'Xhat':X, 'ind':nsamp})
 
 def worker_mfocuss(inputs):

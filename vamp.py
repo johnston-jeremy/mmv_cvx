@@ -100,7 +100,7 @@ def vamp(Y, p):
       tau = np.sqrt(sum_gain)*np.sqrt(1/(M*L))
 
     if t > 0:
-      if np.linalg.norm(X-Xprev)/np.linalg.norm(Xprev) <= p.tol:
+      if np.linalg.norm(X-Xprev) <= p.tol*np.linalg.norm(Xprev):
         break
 
   return X
