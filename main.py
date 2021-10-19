@@ -715,9 +715,9 @@ def main():
   data = {}
   # lam_tradeoff('cvx','L', 'M', 'K')
   Llist = [4,8,12,16,20]
-  Llist = []
+  # Llist = []
   Mlist = [4,8,12,16]
-  Mlist = []
+  # Mlist = []
   Klist = [3,4,5,6,7,8]
   # Klist = [5,6,7,8]
   # Klist = [7]

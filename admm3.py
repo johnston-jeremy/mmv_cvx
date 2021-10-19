@@ -39,9 +39,8 @@ def admm_problem3(Y, p):
     G = - 2 * np.matmul((X - Xhat + 1/rho * U), np.conj(Phi))
     Z = prox_l1_norm_c(Z - tauz/2 * G, sigma)
     
-    Xhat = np.matmul(Z,Phi.T)
-
     # U update
+    Xhat = np.matmul(Z,Phi.T)
     U = U + rho*(X - Xhat)
 
     if t > 10:
