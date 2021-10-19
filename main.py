@@ -368,7 +368,7 @@ def vamp_setup(p, mode):
 
 def admm3_setup(p):
   p.sigma, p.mu, p.rho, p.taux, p.tauz = get_method_params()['admm3'][(p.N,p.L,p.M,p.K,p.J,p.SNR)]
-  p.sigma, p.mu, p.rho, p.taux, p.tauz = 6.9e-01, 1.0e-02, 2.0e+00, 1.4e-01, 7.2e-01
+  # p.sigma, p.mu, p.rho, p.taux, p.tauz = 6.9e-01, 1.0e-02, 2.0e+00, 1.4e-01, 7.2e-01
   p.maxiter = 1000
 
 def admm1_setup(p):
