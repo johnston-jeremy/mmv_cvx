@@ -707,7 +707,7 @@ def lams_experiment():
   # print(NMSE)
 
 def main():
-  Nsamp = 1000
+  Nsamp = 500
 
   data = {}
   # lam_tradeoff('cvx','L', 'M', 'K')
