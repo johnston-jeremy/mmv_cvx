@@ -40,7 +40,7 @@ def Phi_siso(M,N):
   return np.exp(1j*2*np.pi*m*n/N)/np.sqrt(M)
 
 class problem():
-  def __init__(self,N,L,M,Ng,K,Ntxrx,J):
+  def __init__(self,N,L,M,Ng,K,Ntxrx,J,SNR):
 
     self.N = N
     self.M = np.prod(Ntxrx)
@@ -48,6 +48,7 @@ class problem():
     self.K = K
     self.Ng = Ng
     self.J = J
+    self.SNR = SNR
 
     # Real A
     # A = RN(L, N, 1/L)
@@ -55,7 +56,7 @@ class problem():
 
     # Complex A
     A = CN(L, N, 1/L)
-    # A = np.matmul(A,np.diag(1/np.sqrt(np.sum(np.abs(A)**2,axis=0))))
+    A = np.matmul(A,np.diag(1/np.sqrt(np.sum(np.abs(A)**2,axis=0))))
 
     # Phi = array(M,Ng)
     # Phi = np.cos(np.pi*np.arange(M)[:,None]*np.arange(Ng)/(Ng*M))

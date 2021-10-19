@@ -31,81 +31,29 @@ def scaled_noise_c(A,X,SNR):
   stdev = np.sqrt(np.mean(np.abs(noise - np.mean(noise))**2))
   return noise,stdev
 
-
-def gen_r(p,Nsamp,channel_sparsity,N,L,M,Ng,K,SNR):
+def gen_c(p,Nsamp,mode):
+  J,N,L,M,Ng,K,SNR = p.J, p.N, p.L, p.M, p.Ng, p.K, p.SNR
   Phi = p.Phi
   A = p.A
-  epsilon = K/N
-
-  Y = np.zeros((Nsamp,L,M),dtype=complex)
-  X = np.zeros((Nsamp,N,M),dtype=complex)
-
-  for j in range(Nsamp):
-    s = np.zeros((Ng,N), dtype=complex)
-    for i in range(N):
-      s[np.random.permutation(Ng)[:channel_sparsity],i] = np.random.normal(size=(channel_sparsity,))
-    H = np.matmul(Phi, s).T
-    mask = np.zeros(N)
-    ind = np.random.permutation(N)[:int(epsilon*N)]
-    mask[ind] = 1
-    mask = np.diag(mask)
-    X[j] = np.matmul(mask, H)
-
-    Z, sigma = scaled_noise(A,X[j],SNR)
-
-    Y[j] = np.matmul(A, X[j]) + Z
-
-  return Y, X, sigma
-
-
-def gen_c(A,Nsamp,N,L,M,K,SNR):
-
-  Y = np.zeros((Nsamp,L,M),dtype=complex)
-  X = np.zeros((Nsamp,N,M),dtype=complex)
-
-  for j in range(Nsamp):
-    ind = np.random.permutation(N)[:K]
-    X[j,ind] = CN(K,M,1)
-    Z, sigma = scaled_noise_c(A,X[j],SNR)
-    Y[j] = np.matmul(A, X[j]) + Z
-
-  return Y, X, sigma
-
-def gen_c_2(p,Nsamp,channel_sparsity,N,L,M,Ng,K,SNR):
-  Phi = p.Phi
-  A = p.A
-  epsilon = K/N
 
   Y = np.zeros((Nsamp,L,M),dtype=complex)
   X = np.zeros((Nsamp,N,M),dtype=complex)
   Z = np.zeros((Nsamp,N,Ng),dtype=complex)
-
+  # set_trace()
   for j in range(Nsamp):
-    # set_trace()
-    # z = Z[j]
-    rows = np.random.permutation(N)[:2]
-    for r in rows:
-      row = [r]*channel_sparsity
-      col = np.random.permutation(Ng)[:channel_sparsity]
-      Z[j][row,col] = np.random.normal(size=(channel_sparsity,)) \
-                 + 1j*np.random.normal(size=(channel_sparsity,))
-      # indr = np.random.permutation(M)[:channel_sparsity]
-      # indc = np.random.permutation(Ng)[:K]
-      # ind = np.meshgrid(indr,indc)
-      # z[ind[0],ind[1]] = \
-      #     np.random.normal(size=(channel_sparsity,K)) \
-      #   + 1j*np.random.normal(size=(channel_sparsity,K))
+    ind = np.random.permutation(N)[:K]
 
-    # h = np.matmul(Phi, s).T
-    # h = CN(K,M,1)
-    # ind = np.random.permutation(N)[:K]
-    # X[j,ind] = h
-    
-    X[j] = np.matmul(Z[j],Phi.T)
+    if mode == 'mmwave':
+      for i in ind:
+        Z[j,i,np.random.permutation(Ng)[:J]] \
+          = np.random.normal(size=(J,)) \
+          + 1j*np.random.normal(size=(J,))
+      X[j] = np.matmul(Z[j], Phi.T)
+    elif mode =='gaussian':
+      X[j,ind] = CN(K,M,1)
+
     noise, sigma = scaled_noise_c(A,X[j],SNR)
 
     Y[j] = np.matmul(A, X[j]) + noise
-    # set_trace()
-    
-    
+
   return Y, X, Z, sigma

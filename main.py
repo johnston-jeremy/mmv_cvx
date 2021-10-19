@@ -3,34 +3,140 @@ import tqdm
 import numpy as np
 import cvxpy as cp
 import matplotlib.pyplot as plt
-from data import gen_c, gen_c_2
+from data import gen_c
 from problem import problem
 from pdb import set_trace
 from multiprocessing import Pool, Manager
+from workers import *
 
-# N,L,M,K,J,SNR
-params_mmse = {}
-# L
-params_mmse[(50,4,8,3,2,10)] = 1 #0.05 # 50 iter
-params_mmse[(50,8,8,3,2,10)] = 1 #0.03 # 50 iter
-params_mmse[(50,12,8,3,2,10)] = 1 #0.3 # 50 iter
-params_mmse[(50,16,8,3,2,10)] = 1 #0.3 # 50 iter
-params_mmse[(50,20,8,3,2,10)] = 1 #0.3 # 15 iter
-# M
-params_mmse[(50,12,4,3,2,10)] = 1 #0.3 # 50 iter
-params_mmse[(50,12,12,3,2,10)] = 1 #0.3 # 100 iter
-params_mmse[(50,12,16,3,2,10)] = 1 #0.3 # 100 iter
-# K
-params_mmse[(50,12,8,4,2,10)] = 1 # 0.3 # 100 iter
-params_mmse[(50,12,8,5,2,10)] = 1 #0.3 # 100 iter
-params_mmse[(50,12,8,6,2,10)] = 1 #0.5 # 100 iter
-params_mmse[(50,12,8,7,2,10)] = 1 # 0.5 # 100 iter
-params_mmse[(50,12,8,8,2,10)] = 1 # 0.3 # 100 iter
-# SNR
-params_mmse[(50,12,8,3,2,0)] = 1 #0.3 # 100 iter
-params_mmse[(50,12,8,3,2,5)] = 1 #0.3 # 100 iter
-params_mmse[(50,12,8,3,2,15)] = 1 #0.3 # 150 iter
-params_mmse[(50,12,8,3,2,20)] = 1 #0.15 # 250 iter
+def get_method_params():
+  # N,L,M,K,J,SNR
+  params_ista = {}
+  # L
+  params_ista[(50,4,8,3,2,10)] = 2.5
+  params_ista[(50,8,8,3,2,10)] = 1.5
+  params_ista[(50,12,8,3,2,10)] = 0.25
+  params_ista[(50,16,8,3,2,10)] = 0.15
+  params_ista[(50,20,8,3,2,10)] = 0.15
+  # M
+  params_ista[(50,12,4,3,2,10)] = 0.18
+  params_ista[(50,12,12,3,2,10)] = 0.12
+  params_ista[(50,12,16,3,2,10)] = 0.11
+  # K
+  params_ista[(50,12,8,4,2,10)] = 0.25
+  params_ista[(50,12,8,5,2,10)] = 0.25
+  params_ista[(50,12,8,6,2,10)] = 0.16
+  params_ista[(50,12,8,7,2,10)] = 0.16
+  params_ista[(50,12,8,8,2,10)] = 0.19
+  # SNR
+  params_ista[(50,12,8,3,2,0)] = 0.55
+  params_ista[(50,12,8,3,2,5)] = 0.35
+  params_ista[(50,12,8,3,2,15)] = 0.1
+  params_ista[(50,12,8,3,2,20)] = 0.1
+
+  # N,L,M,K,J,SNR
+  params_mmse = {}
+  # L
+  params_mmse[(50,4,8,3,2,10)] = 1 #0.05 # 50 iter
+  params_mmse[(50,8,8,3,2,10)] = 1 #0.03 # 50 iter
+  params_mmse[(50,12,8,3,2,10)] = 1 #0.3 # 50 iter
+  params_mmse[(50,16,8,3,2,10)] = 1 #0.3 # 50 iter
+  params_mmse[(50,20,8,3,2,10)] = 1 #0.3 # 15 iter
+  # M
+  params_mmse[(50,12,4,3,2,10)] = 1 #0.3 # 50 iter
+  params_mmse[(50,12,12,3,2,10)] = 1 #0.3 # 100 iter
+  params_mmse[(50,12,16,3,2,10)] = 1 #0.3 # 100 iter
+  # K
+  params_mmse[(50,12,8,4,2,10)] = 1 # 0.3 # 100 iter
+  params_mmse[(50,12,8,5,2,10)] = 1 #0.3 # 100 iter
+  params_mmse[(50,12,8,6,2,10)] = 1 #0.5 # 100 iter
+  params_mmse[(50,12,8,7,2,10)] = 1 # 0.5 # 100 iter
+  params_mmse[(50,12,8,8,2,10)] = 1 # 0.3 # 100 iter
+  # SNR
+  params_mmse[(50,12,8,3,2,0)] = 1 #0.3 # 100 iter
+  params_mmse[(50,12,8,3,2,5)] = 1 #0.3 # 100 iter
+  params_mmse[(50,12,8,3,2,15)] = 1 #0.3 # 150 iter
+  params_mmse[(50,12,8,3,2,20)] = 1 #0.15 # 250 iter
+
+  #  N,L,M,K,J,SNR
+  params_admm3 = {}
+  # L
+  params_admm3[(50,4,8,3,2,10)] = 1.74e-01, 5.74e-02, 2.17e-01, 8.95e-02, 7.17e-02
+  # params_admm3[(50,4,8,3,2,10)] = 4.32e-02, 5.27e-02, 7.37e-01, 1.25e-01, 2.89e-02 #
+  params_admm3[(50,8,8,3,2,10)] = 1.20e+00, 5.74e-03, 2.23e+00, 1.56e-01, 4.14e-01 #
+  # params_admm3[(50,12,8,3,2,10)] = 6.18e-01, 8.95e-03, 2.23e+00, 2.44e-01, 4.14e-01 #
+  params_admm3[(50,12,8,3,2,10)] = 6.9e-01, 1.0e-02, 2.0e+00, 1.4e-01, 7.2e-01
+  params_admm3[(50,16,8,3,2,10)] = 3.96e-01, 1.74e-02, 1.79e+00, 2.44e-01, 6.44e-01 # 
+  params_admm3[(50,20,8,3,2,10)] = 1.20e+00, 5.74e-03, 1.15e+00, 1.56e-01, 6.44e-01 #
+  # M
+  params_admm3[(50,12,4,3,2,10)] = 7.71e-01, 1.74e-02, 1.15e+00, 2.44e-01, 4.14e-01 # 
+  params_admm3[(50,12,12,3,2,10)] = 1.20e+00, 8.95e-03, 1.79e+00, 2.44e-01, 6.44e-01 #
+  # params_admm3[(50,12,16,3,2,10)] = 3.96e-01, 1.12e-02, 1.79e+00, 1.56e-01, 4.14e-01 #
+  params_admm3[(50,12,16,3,2,10)] = 1.20e+00, 5.14e-03, 1.79e+00, 2.18e-01, 3.70e-01
+  
+  # K
+  # params_admm3[(50,12,8,4,2,10)] = 1.20e+00, 1.12e-02, 1.15e+00, 1.56e-01, 6.44e-01 # 
+  # # params_admm3[(50,12,8,5,2,10)] = 7.71e-01, 8.95e-03, 3.48e+00, 2.44e-01, 6.44e-01 #
+  # params_admm3[(50,12,8,5,2,10)] = 1.20e+00, 1.12e-02, 1.15e+00, 1.56e-01, 6.44e-01
+  # params_admm3[(50,12,8,6,2,10)] = 7.71e-01, 1.12e-02, 1.79e+00, 2.44e-01, 4.14e-01 # 
+  # params_admm3[(50,12,8,7,2,10)] = 1.20e+00, 1.74e-02, 1.15e+00, 2.44e-01, 6.44e-01 # 
+  # params_admm3[(50,12,8,8,2,10)] = 7.71e-01, 8.95e-03, 3.48e+00, 2.44e-01, 4.14e-01 # 
+
+  params_admm3[(50,12,8,4,2,10)] = 6.9e-01, 1.0e-02, 2.0e+00, 1.4e-01, 7.2e-01 # 
+  params_admm3[(50,12,8,5,2,10)] = 6.9e-01, 1.0e-02, 2.0e+00, 1.4e-01, 7.2e-01
+  params_admm3[(50,12,8,6,2,10)] = 6.9e-01, 1.0e-02, 2.0e+00, 1.4e-01, 7.2e-01 # 
+  params_admm3[(50,12,8,7,2,10)] = 6.9e-01, 1.0e-02, 2.0e+00, 1.4e-01, 7.2e-01 # 
+  params_admm3[(50,12,8,8,2,10)] = 6.9e-01, 1.0e-02, 2.0e+00, 1.4e-01, 7.2e-01 # 
+
+  
+  # SNR
+  params_admm3[(50,12,8,3,2,0)] = 3.96e-01, 1.74e-02, 1.79e+00, 8.04e-02, 3.31e-01 # 
+  params_admm3[(50,12,8,3,2,5)] = 7.71e-01, 1.74e-02, 1.15e+00, 2.44e-01, 4.14e-01 # 
+  params_admm3[(50,12,8,3,2,15)] = 3.96e-01, 8.95e-03, 3.48e+00, 2.44e-01, 6.44e-01 # 
+  params_admm3[(50,12,8,3,2,20)] = 1.20e+00, 8.95e-03, 1.15e+00, 1.56e-01, 6.44e-01 #
+
+  params_admm3[(50,12,8,3,2,0)] = 6.90e-01, 1.00e-02, 1.17e+00, 1.40e-01, 4.21e-01  # 
+  params_admm3[(50,12,8,3,2,5)] = 6.90e-01, 1.00e-02, 1.17e+00, 1.40e-01, 4.21e-01  # 
+  params_admm3[(50,12,8,3,2,15)] = 6.90e-01, 1.00e-02, 1.17e+00, 1.40e-01, 4.21e-01  # 
+  params_admm3[(50,12,8,3,2,20)] = 6.90e-01, 1.00e-02, 1.17e+00, 1.40e-01, 4.21e-01  #
+  
+
+  #  N,L,M,K,J,SNR
+  params_admm1 = {}
+  # L
+  params_admm1[(50,4,8,3,2,10)] = 0.822, 0.072, 0.057 # 50 iter
+  params_admm1[(50,8,8,3,2,10)] = 0.057, 0.024, 0.339 # 50 iter
+  params_admm1[(50,12,8,3,2,10)] = 0.217, 0.057, 0.008 # 50 iter
+  params_admm1[(50,16,8,3,2,10)] = 0.217, 0.112, 0.006 # 50 iter
+  params_admm1[(50,20,8,3,2,10)] = 0.072, 0.03, 0.527 # 15 iter
+  # M
+  params_admm1[(50,12,4,3,2,10)] = 0.217, 0.057, 0.008 # 50 iter
+  params_admm1[(50,12,12,3,2,10)] = 0.217, 0.057, 0.008 # 100 iter
+  params_admm1[(50,12,16,3,2,10)] = 0.217, 0.057, 0.008 # 100 iter
+  
+  # K
+  params_admm1[(50,12,8,4,2,10)] = 0.174, 0.057, 0.008 # 100 iter
+  params_admm1[(50,12,8,5,2,10)] = 0.09, 0.03, 0.339 # 100 iter
+  params_admm1[(50,12,8,6,2,10)] = 0.217, 0.112, 0.015 # 100 iter
+  params_admm1[(50,12,8,7,2,10)] = 0.174, 0.015, 0.339 # 100 iter
+  params_admm1[(50,12,8,8,2,10)] = 0.174, 0.024, 0.217 # 100 iter
+
+  params_admm1[(50,12,8,4,2,10)] = 0.217, 0.057, 0.1 # 100 iter
+  params_admm1[(50,12,8,5,2,10)] = 0.217, 0.057, 0.1 # 100 iter
+  params_admm1[(50,12,8,6,2,10)] = 0.217, 0.057, 0.1 # 100 iter
+  params_admm1[(50,12,8,7,2,10)] = 0.217, 0.057, 0.1 # 100 iter
+  params_admm1[(50,12,8,8,2,10)] = 0.217, 0.057, 0.1 # 100 iter
+
+  # SNR
+  params_admm1[(50,12,8,3,2,0)] = 0.822, 0.057, 0.006 # 100 iter
+  params_admm1[(50,12,8,3,2,5)] = 0.217, 0.015, 0.339 # 100 iter
+  params_admm1[(50,12,8,3,2,15)] = 0.003, 0.03, 0.217 # 150 iter
+  params_admm1[(50,12,8,3,2,20)] = 0.01, 0.046, 0.112 # 250 iter
+  
+
+  
+
+  return {'vampista':params_ista, 'vampmmse':params_mmse, 'admm3':params_admm3, 'admm1':params_admm1}
 
 def f1():
   M = 8
@@ -65,174 +171,6 @@ def f1():
     res[-1] = 10*np.log10(res[-1]/Nsamp)
   plt.plot(SNRs,res)
   plt.show()
-
-def worker_oracle(inputs):
-  E, prob, Yall, Xall, Zall, lams1,lams2, ind = inputs
-  i, j, nsamp = ind
-  Y = Yall[nsamp]
-  X = Xall[nsamp]
-  Z = Zall[nsamp]
-
-  I = np.where(np.linalg.norm(X, axis=1) > 0)[0]
-  # print(I)
-  Xhat = np.zeros((prob.N,prob.M), dtype=complex)
-  # Xhat[I] = np.linalg.pinv(prob.A[:,np.array(I)])@Y
-  A = prob.A[:,np.array(I)]
-  # A = prob.A
-  # B = prob.Phi.T
-  # Zhat = np.linalg.pinv(prob.A[:,np.array(I)])@Y@np.linalg.pinv(prob.Phi.T)
-  # Zhat = np.linalg.inv(A.T.conj()@A)@A.T.conj()@Y@np.linalg.pinv(B) #B.T.conj()@np.linalg.inv(B@B.T.conj())
-  Zhat = np.zeros((prob.N,prob.Ng), dtype=complex)
-  Phiall = []
-  for n in I:
-    Ipaths = np.where(np.abs(Z[n]) > 0)[0]
-    Phiall.append(prob.Phi[:,Ipaths])
-
-    # Phi = prob.Phi[:,Ipaths]
-    # B = Phi.T
-
-    # rhs = A.T.conj()@Y@B.T.conj()@np.linalg.inv(B@B.T.conj())
-
-    # rhs = (np.linalg.pinv(A.T.conj()@A)@(A.T.conj())@Y@(B.T.conj())).T
-    # Zhat[n,Ipaths] = np.diag((np.linalg.pinv(B.conj()@B.T) @ rhs).T)
-  Zcvx = [cp.Variable(prob.J, complex=True) for _ in I]
-  exp = 0
-  for i in range(len(I)):
-    a = cp.Constant((A[:,i][:,None]).real) + cp.multiply(1j,cp.Constant((A[:,i][:,None]).imag))
-    Phitemp = cp.Constant(Phiall[i].T.real) + cp.multiply(1j,cp.Constant(Phiall[i].T.imag))
-    exp += (a @ (Zcvx[i] @ Phitemp)[:,None].T)
-  obj = cp.norm(Y -exp)**2
-  p = cp.Problem(cp.Minimize(obj))
-  p.solve()
-  # i = 0
-  # for r in rhs.T:
-  #   Zhat[:,i] = np.linalg.solve(A.T.conj()@A, r)
-  #   i += 1
-  # Zhat = np.linalg.solve(B.conj()@B.T, rhs).T
-  # Zhat[I] = (np.linalg.pinv(B.conj()@B.T) @ rhs).T
-  for i in range(len(I)):
-    Ipaths = np.where(np.abs(Z[I[i]]) > 0)[0]
-    Zhat[I[i],Ipaths] = Zcvx[i].value
-  Xhat = Zhat @ prob.Phi.T
-  # Zhat = np.linalg.pinv(prob.Phi)@Xhat.T
-  # Xhat = (prob.Phi@Zhat).T
-  E.append({'Xhat':Xhat, 'ind':ind})
-
-def worker_omp(inputs):
-  E, prob, Yall, Xall,lams1,lams2, ind = inputs
-  i, j, nsamp = ind
-  Y = Yall[nsamp]
-  A = prob.A
-  Yk = Y
-  I = []
-  while(len(I) < prob.K):
-    Z = A.T.conj() @ Yk
-    k = np.argmax(np.linalg.norm(Z, axis=1))
-    if k not in I:
-      I.append(k)
-    Yk = Yk - np.outer(A[:,k], Z[k])
-
-  X = np.zeros((prob.N,prob.M), dtype=complex)
-  X[I] = np.linalg.pinv(A[:,np.array(I)])@Y
-  E.append({'Xhat':X, 'ind':ind})
-
-def worker_vampmmse(inputs):
-  E, prob, Yall,Xall, lams1,lams2, ind = inputs
-  i, j, nsamp = ind
-  Y = Yall[nsamp]
-  X = vamp(Y, prob, onsager=1)
-  E.append({'Xhat':X, 'ind':ind})
-
-def worker_mfocuss(inputs):
-  E, prob, Yall, Xall,lams1,lams2, ind = inputs
-  i, j, nsamp = ind
-  Y = Yall[nsamp]
-  Xk = np.linalg.pinv(prob.A)@Y
-  # Xk = np.random.normal(size=(prob.N,prob.M)) + 1j*np.random.normal(size=(prob.N,prob.M))
-  p = 0.8
-  tol = 0.01
-  while(1):
-    Xprev = Xk
-    Wk = np.diag(np.linalg.norm(Xk, axis=1))**(1-p/2)
-    Qk = np.linalg.pinv(prob.A@Wk)@Y
-    Xk = Wk@Qk
-    if np.linalg.norm(Xprev-Xk)/np.linalg.norm(Xk) < tol:
-      break
-  E.append({'Xhat':Xk, 'ind':ind})
-  
-def worker(inputs):
-  E, p, Yall, Xall, lams1,lams2, ind = inputs
-  i, j, nsamp = ind
-  Y = Yall[nsamp]
-  lam1, lam2 = lams1[i], lams2[j]
-
-  Phi = cp.Constant(p.Phi.real) + 1j*cp.Constant(p.Phi.imag)
-  Zcvx = cp.Variable(shape=(p.N,p.Ng),complex=True)
-  Xcvx = cp.Variable(shape=(p.N,p.M),complex=True)
-  obj = cp.norm(Y-p.A@Xcvx)**2 + lam1*cp.sum(cp.norm(Xcvx,p=2,axis=1)) + lam2*cp.norm(Zcvx, p=1)
-  # obj = cp.norm(Y-p.A@(Zcvx@Phi.T))**2 + lam1*cp.sum(cp.norm(Zcvx@Phi.T,p=2,axis=1)) + lam2*cp.norm(Zcvx, p=1)  
-  # set_trace()
-  c = [Zcvx@Phi.T == Xcvx] # + [cp.imag(cp.matmul(Zcvx,p.Phi.T)) == cp.imag(Xcvx)]
-  prob = cp.Problem(cp.Minimize(obj),c)
-  prob.solve()
-  Xhat = Zcvx.value @ (p.Phi.T)
-  E.append({'Xhat':Xhat, 'Zhat':Zcvx.value, 'ind':ind})
-
-def worker3(inputs):
-  E, p, Yall, Xall, lams1,lams2, ind = inputs
-  i, j, nsamp = ind
-  Y = Yall[nsamp]
-  lam1, lam2 = lams1[i], lams2[j]
-
-  Phi = cp.Constant(p.Phi.real) + 1j*cp.Constant(p.Phi.imag)
-  Zcvx = cp.Variable(shape=(p.N,p.Ng),complex=True)
-  Xcvx = cp.Variable(shape=(p.N,p.M),complex=True)
-  obj = lam1*cp.sum(cp.norm(Zcvx@Phi.T,p=2,axis=1)) + cp.norm(Zcvx, p=1)
-  # obj = cp.sum(cp.norm(Xcvx,p=2,axis=1)) + cp.norm(Zcvx, p=1)
-  # set_trace()
-  c = [Y == p.A@Xcvx] + [Zcvx@Phi.T == Xcvx] # + [cp.imag(cp.matmul(Zcvx,p.Phi.T)) == cp.imag(Xcvx)]
-  # c = [cp.norm(Y - p.A@Zcvx@Phi.T)**2 <= lam2*cp.norm(Y)**2] # + [cp.imag(cp.matmul(Zcvx,p.Phi.T)) == cp.imag(Xcvx)]
-  prob = cp.Problem(cp.Minimize(obj), c)
-  prob.solve(solver='MOSEK')
-  E.append({'Xhat':Zcvx.value@p.Phi.T, 'Zhat':Zcvx.value, 'ind':ind})
-
-def worker2(inputs):
-  E, p, Yall, Xall, lams1, lams2, ind = inputs
-  i, j, nsamp = ind
-  Y = Yall[nsamp]
-  lam1 = lams1[i]
-  lam2 = lams2[j]
-
-  Phi = cp.Constant(p.Phi.real) + cp.multiply(1j,cp.Constant(p.Phi.imag))
-  # Phi = cp.Constant(p.Phi)
-
-  Xcvx = cp.Variable(shape=(p.N,p.M),complex=True)
-  obj = cp.norm(Y-p.A@Xcvx)**2 + lam1*cp.sum(cp.norm(Xcvx,p=2,axis=1))
-  prob = cp.Problem(cp.Minimize(obj))
-  prob.solve()
-
-  Xhat = Xcvx.value
-  
-  for n in range(p.N):
-    Zcvx = cp.Variable(shape=(p.Ng,),complex=True)
-    obj = cp.norm(Xhat[n] - Phi@Zcvx)**2 + lam2 * cp.norm(Zcvx, p=1)
-    prob = cp.Problem(cp.Minimize(obj))
-    prob.solve(solver='MOSEK',verbose=False)
-    Xhat[n] = Zcvx.value @ (p.Phi.T)
-
-  E.append({'Xhat':Xhat, 'ind':ind})
-
-def worker4(inputs):
-  E, p, Yall,Xall, _, lams2, ind = inputs
-  i, _, nsamp = ind
-  Y = Yall[nsamp]
-
-  Xcvx = cp.Variable(shape=(p.N,p.M),complex=True)
-  obj = cp.sum(cp.norm(Xcvx,p=2,axis=1))
-  c = [Y == p.A@Xcvx]
-  prob = cp.Problem(cp.Minimize(obj), c)
-  prob.solve()
-  E.append({'Xhat':Xcvx.value, 'ind':ind})
 
 def f2():
   M = 8
@@ -282,7 +220,7 @@ def f2():
   plt.plot(lams,res)
   plt.show()
 
-def mp(L,M,K,method):
+def mp_lam(L,M,K,method):
   print(L,M,K,method)
   # M = 8
   N = 50
@@ -299,19 +237,20 @@ def mp(L,M,K,method):
 
   # SNRs = [10,15]
   SNR = 10
-  # Nsamp = 10
+  Nsamp = 10
+  p = problem(*(N,L,M,P,K,(M,1),channel_sparsity))
 
-  # Yall, Zall, sigma = gen_c_2(p,Nsamp,channel_sparsity,N,L,M,P,K,SNR)
-  D = np.load('./testdata/data_L='+str(L)+'_M='+str(M)+'_K='+str(K)+'_SNR='+str(SNR)+'.npy', allow_pickle=True).item()
+  Yall, Xall, Zall, sigma = gen_c_2(p,Nsamp,channel_sparsity,N,L,M,P,K,SNR)
+  # D = np.load('./testdata/data_L='+str(L)+'_M='+str(M)+'_K='+str(K)+'_SNR='+str(SNR)+'.npy', allow_pickle=True).item()
   # set_trace()
   # Yall, Xall, p = D['Y'], D['X'], D['p']
   
-  Ytest, Xtest, p = D['Y'], D['X'], D['p']
-  Yall = Ytest[0] + 1j*Ytest[1]
-  Xall = Xtest[0] + 1j*Xtest[1]
+  # Ytest, Xtest, p = D['Y'], D['X'], D['p']
+  # Yall = Ytest[0] + 1j*Ytest[1]
+  # Xall = Xtest[0] + 1j*Xtest[1]
   
-  Nsamp = Xall.shape[0]
-  Nsamp = 12
+  # Nsamp = Xall.shape[0]
+  # Nsamp = 12
   # set_trace()
   
   # print('SNR=', 10*np.log10(np.linalg.norm(A@X)**2/np.linalg.norm(noise)**2))
@@ -327,7 +266,6 @@ def mp(L,M,K,method):
   lams2 = [0.1]
 
 
-  # p = problem(*(N,L,M,P,K,(M,1),channel_sparsity))
 
   ind = []
   for i in range(Nlam1):
@@ -352,7 +290,7 @@ def mp(L,M,K,method):
     p.denoiser = 'mmse'
     p.onsager = 1
     p.beta = params_mmse[(N,L,M,K,channel_sparsity,SNR)]
-    p.params = omega, epsilon, p.beta, p.sigma_noise, ksi, p.maxiter, p.alpha
+    p.params = omega, epsilon, p.beta, None, ksi, p.maxiter, p.alpha
     worker_handle = worker_vampmmse
   elif method == 'omp':
     worker_handle = worker_omp
@@ -383,6 +321,92 @@ def mp(L,M,K,method):
   # NMSE2 = 10*np.log10(np.mean(NMSE2, axis=-1))
 
   return NMSE, lams1, lams2, (L,M,K)
+
+def vamp_setup(p, mode):
+  if mode == 'vampista':
+    # p.beta = 1/p.M # channel variance
+    p.beta = 1 # channel variance
+    ksi = 1
+    omega = p.N/p.L
+    epsilon = p.K/p.N
+    maxiter = 100
+    p.maxiter = maxiter
+    p.params = omega, epsilon, p.beta, None, ksi, maxiter, p.alpha
+
+    damp1 = 0.6
+    damp2 = 0
+    p.damp = damp1, damp2
+    p.lam = get_method_params()[mode][(p.N,p.L,p.M,p.K,p.J,p.SNR)]
+    p.damp_init = 0.7
+    p.MAXITER = 20
+    p.onsager = 0
+    p.istawarmstart = True
+    p.denoiser = 'ista'
+  
+  elif mode == 'vampmmse':
+    ksi = 1
+    omega = p.N/p.L
+    epsilon = p.K/p.N
+    p.maxiter = 500
+    damp1 = 0.6
+    damp2 = 0
+    p.lam = 1
+    p.damp = damp1, damp2
+    p.denoiser = 'mmse'
+    p.onsager = 1
+    p.beta = get_method_params()[mode][(p.N,p.L,p.M,p.K,p.J,p.SNR)]
+    p.params = omega, epsilon, p.beta, None, ksi, p.maxiter, p.alpha
+  
+def mp_samples(method, Yall, Xall, Zall, p):
+  print(method)
+
+  # D = np.load('./testdata/data_L='+str(L)+'_M='+str(M)+'_K='+str(K)+'_SNR='+str(SNR)+'.npy', allow_pickle=True).item()
+  # set_trace()
+  # Yall, Xall, p = D['Y'], D['X'], D['p']
+  
+  # Ytest, Xtest, p = D['Y'], D['X'], D['p']
+  # Yall = Ytest[0] + 1j*Ytest[1]
+  # Xall = Xtest[0] + 1j*Xtest[1]
+
+  Nsamp = Xall.shape[0]
+  
+  ind = range(Nsamp)
+
+  
+  if method == 'cvx':
+    worker_handle = worker
+  elif method == 'mfocuss':
+    worker_handle = worker_mfocuss
+  elif method == 'vampmmse':
+    vamp_setup(p,method)
+    worker_handle = worker_vamp
+  elif method == 'vampista':
+    vamp_setup(p,method)
+    worker_handle = worker_vamp
+  elif method == 'omp':
+    worker_handle = worker_omp
+  elif method == 'oracle':
+    worker_handle = worker_oracle
+
+  manager = Manager()
+  E = manager.list()
+  Nworker = len(ind)
+  if method == 'oracle':
+    inputs = list(zip([E]*Nworker, [p]*Nworker, [Yall]*Nworker, [Xall]*Nworker, [Zall]*Nworker, ind))
+  else:
+    inputs = list(zip([E]*Nworker, [p]*Nworker, [Yall]*Nworker, [Xall]*Nworker, ind))
+
+  with Pool() as pool:
+    for _ in tqdm.tqdm(pool.imap_unordered(worker_handle, inputs), total=len(inputs)):
+        pass
+
+  NMSE = np.zeros((Nsamp,))
+  for e in E:
+    nsamp = e['ind']
+    NMSE[nsamp] = np.linalg.norm(e['Xhat']-Xall[nsamp])**2/np.linalg.norm(Xall[nsamp])**2
+  NMSE = 10*np.log10(np.mean(NMSE))
+
+  return NMSE
 
 def mp_jobs(L,M,K,method):
   print(L,M,K,method)
@@ -540,49 +564,55 @@ def lam_tradeoff_2():
 
   plt.show()
   
-def LMK(method, *args):
+def LMK(method, data, *args):
+  
+  Llist = data['Llist']
+  Mlist = data['Mlist']
+  Klist = data['Klist']
+  
   M = 8
   K = 3
   NMSE_L = []
-  Llist = [4,8,12,16,20]
-  if 'L' in args:
-    for L in Llist:
-    # for L in [12]:
-      NMSE, lams1, lams2, LMK = mp(L, M, K, method)
-      print(NMSE[0,0])
-      NMSE_L.append(NMSE[0,0])
+  for L in Llist:
+    Yall, Xall, Zall, p = data[(L,M,K)]
+    NMSE = mp_samples(method, Yall, Xall, Zall, p)
+    print(NMSE)
+    NMSE_L.append(NMSE)
   
   L = 12
   K = 3
   NMSE_M = []
-  Mlist = [4,8,12,16]
-  if 'M' in args:
-    for M in Mlist:
-      NMSE, lams1, lams2, LMK = mp(L, M, K, method)
-      print(NMSE[0,0])
-      NMSE_M.append(NMSE[0,0])
+ 
+  for M in Mlist:
+    Yall, Xall, Zall, p = data[(L,M,K)]
+    NMSE = mp_samples(method, Yall, Xall, Zall, p)
+    print(NMSE)
+    NMSE_M.append(NMSE)
 
   M = 8
   L = 12
-  Klist = [3,4,5,6,7,8]
   NMSE_K = []
-  if 'K' in args:
-    for K in Klist:
-      NMSE, lams1, lams2, LMK = mp(L, M, K, method)
-      print(NMSE[0,0])
-      NMSE_K.append(NMSE[0,0])
+  for K in Klist:
+    Yall, Xall, Zall, p = data[(L,M,K)]
+    NMSE = mp_samples(method, Yall, Xall, Zall, p)
+    print(NMSE)
+    NMSE_K.append(NMSE)
 
-  print('L', NMSE_L)
-  print('M', NMSE_M)
-  print('K', NMSE_K)
+  if len(NMSE_L) > 0: print('L', NMSE_L)
+  if len(NMSE_M) > 0: print('M', NMSE_M)
+  if len(NMSE_K) > 0: print('K', NMSE_K)
   
   if 'plot' in args:
-    figK, axK = plt.subplots()
-    figM, axM = plt.subplots()
-    figL, axL = plt.subplots()
-    axL.plot(Llist, NMSE_L)
-    axM.plot(Mlist, NMSE_M)
-    axK.plot(Klist, NMSE_K)
+    if len(NMSE_L) > 0: 
+      figL, axL = plt.subplots()
+      axL.plot(Llist, NMSE_L)
+    if len(NMSE_M) > 0: 
+      figM, axM = plt.subplots()
+      axM.plot(Mlist, NMSE_M)
+    if len(NMSE_K) > 0: 
+      figK, axK = plt.subplots()
+      axK.plot(Klist, NMSE_K)
+
     plt.show()
 
 def LMK_jobs(method, *args):
@@ -630,13 +660,18 @@ def LMK_jobs(method, *args):
     axK.plot(Klist, NMSE_K)
     plt.show()
 
-if __name__ == '__main__':
-  # lam_tradeoff('cvx','L', 'M', 'K')
-  
-  LMK('cvx','L','M','K')
-  import sys
-  sys.exit()
+def generate_data(Nsamp,L,M,K,mode):
+  N = 50
+  P = 2*M
+  J = 2
+  SNR = 10
+  p = problem(*(N,L,M,P,K,(M,1),J,SNR))
 
+  Yall, Xall, Zall, sigma = gen_c(p, Nsamp, mode)
+
+  return Yall, Xall, Zall, p
+
+def lams_experiment():
   # LMK('mfocuss')
 
   NMSE, lams1, lams2, L_M_K = mp(12,8,3, 'cvx')
@@ -669,3 +704,39 @@ if __name__ == '__main__':
   # plt.show()
 
   # print(NMSE)
+
+def main():
+  Nsamp = 20
+
+  data = {}
+  # lam_tradeoff('cvx','L', 'M', 'K')
+  Llist = [4,8,12,16,20]
+  Llist = []
+  Mlist = [4,8,12,16]
+  Mlist = []
+  Klist = [3,4,5,6,7,8]
+  # Klist = [7]
+  for L in Llist:
+    M = 8
+    K = 3
+    data[(L,M,K)] = generate_data(Nsamp,L,M,K,'mmwave')
+
+  for M in Mlist:
+    L = 12
+    K = 3
+    data[(L,M,K)] = generate_data(Nsamp,L,M,K,'mmwave')
+
+  for K in Klist:
+    M = 8
+    L = 12
+    data[(L,M,K)] = generate_data(Nsamp,L,M,K,'mmwave')
+
+
+  data['Llist'] = Llist
+  data['Mlist'] = Mlist
+  data['Klist'] = Klist
+
+  LMK('vampista', data, 'plot')
+
+if __name__ == '__main__':
+  main()
