@@ -287,18 +287,31 @@ def admm_opt_scalar(x, *args):
 
   maxiter1 = 1000
   p, Y, X = pYX
-  params = p.N, p.L, p.M, d['mu'], d['beta'], d['taux'], d['gamma'], maxiter1
+  p.mu = d['mu']
+  p.beta = d['beta']
+  p.taux = d['taux']
+  p.gamma = d['gamma']
   Nsamp = Y.shape[0]
   error_hist = 0
   errors = []
   
-  avgerror = admm_multiprocess(p, Y, params, X)
+  # avgerror = admm_multiprocess(p, Y, X)
+  E = []
+  for n in range(Nsamp):
+    admm_worker((Y[n], p, X[n], E))
+  avgerror = np.mean(E)
 
   errors.append(10*np.log10(avgerror))
   # set_trace()
-  print('{:.1e},'.format(d['mu']), \
-        '{:.1e},'.format(d['beta']), \
-        '{:.1e},'.format(d['taux']), \
+  # print('{:.1e},'.format(d['mu']), \
+  #       '{:.1e},'.format(d['beta']), \
+  #       '{:.1e},'.format(d['taux']), \
+  #       '{:.4e}'.format(errors[-1]),
+  #       var)
+  print('{:.1e},'.format(p.mu), \
+        '{:.1e},'.format(p.beta), \
+        '{:.1e},'.format(p.taux), \
+        '{:.1e},'.format(p.gamma), \
         '{:.4e}'.format(errors[-1]),
         var)
   return avgerror
@@ -308,7 +321,7 @@ def admm_worker(inputs):
   Xhat = admm_problem1(Y, p)
   E.append((np.linalg.norm(X-Xhat)/np.linalg.norm(X))**2)
 
-def admm_multiprocess(p, Y, params, X):
+def admm_multiprocess(p, Y, X):
   Nsamp = Y.shape[0]
   manager = Manager()
   E = manager.list()
@@ -352,10 +365,7 @@ def mymin(T,p,Y,X):
     # np.random.shuffle(variables)
     # print(variables)
     for var in variables:
-      p.mu = d['mu']
-      p.beta = d['beta']
-      p.taux = d['taux']
-      p.gamma = d['gamma']
+      
       p.maxiter = 1000
       p.tol = 1e-6
 
