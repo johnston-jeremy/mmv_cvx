@@ -372,7 +372,7 @@ def admm3_setup(p):
 
 def admm1_setup(p):
   p.mu, p.beta, p.taux, p.gamma = get_method_params()['admm1'][(p.N,p.L,p.M,p.K,p.J,p.SNR)]
-  # p.mu, p.beta, p.taux, p.gamma = 1e-5, 0.2, 0.8, 0.5
+  p.mu, p.beta, p.taux, p.gamma = 0.22815461799515804, 0.22815461799515804, 0.007790450939353023, 0.3320413925317422,
   p.maxiter = 1000
 
 def mp_samples(method, Yall, Xall, Zall, p):
@@ -429,7 +429,7 @@ def mp_samples(method, Yall, Xall, Zall, p):
   for e in E:
     nsamp = e['ind']
     NMSE[nsamp] = np.linalg.norm(e['Xhat']-Xall[nsamp])**2/np.linalg.norm(Xall[nsamp])**2
-  # print(NMSE)
+  print(NMSE)
   NMSE = 10*np.log10(np.mean(NMSE))
 
   return NMSE
@@ -764,8 +764,9 @@ def main():
   data['Mlist'] = Mlist
   data['Klist'] = Klist
 
-  methods = ['admm1','admm3','vampmmse', 'vampista']
-  # methods = ['admm1']
+  # methods = ['admm1','admm3','vampmmse', 'vampista']
+  # methods = ['vampista']
+  methods = ['admm1']
   NMSE_L, NMSE_M, NMSE_K = {'var':'L'}, {'var':'M'}, {'var':'K'}
   for method in methods:
     NMSE_L[method], NMSE_M[method], NMSE_K[method] = LMK(method, data)
