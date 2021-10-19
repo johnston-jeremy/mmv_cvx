@@ -44,7 +44,7 @@ def admm_problem3(Y, p):
     U = U + rho*(X - Xhat)
 
     if t > 10:
-      if la.norm(Xhatprev-Xhat)/la.norm(Xhatprev) <= p.tol:
+      if la.norm(Xhatprev-Xhat) <= p.tol*la.norm(Xhatprev):
         break
 
   return Xhat
