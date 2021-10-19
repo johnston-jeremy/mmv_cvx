@@ -406,7 +406,7 @@ def routine1():
   # params_list = [(50,12,8,2*8,4,(8,1),2, 10)]
   
   hyperparams = []
-  Nsamp = 5
+  Nsamp = 10
   for N,L,M,_,K,_,_,SNR in params_list:
     Y, X, Z, p = generate_data(Nsamp,L,M,K,'mmwave')
 
@@ -415,7 +415,7 @@ def routine1():
   
   i=0
   for N,L,M,_,K,_,_,SNR in params_list:
-    key = [str(k)+',' for k in [N, L, M, K, SNR]]
+    key = [str(k)+',' for k in [N, L, M, K, 2, SNR]]
     val = [str(h) + ',' for h in hyperparams[i]]
     print('params_admm1[(', *key, ')] =', *val)
     # print(*[str(np.round(h,3)) + ',' for h in hyperparams[i]])
