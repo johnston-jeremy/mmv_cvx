@@ -368,6 +368,7 @@ def vamp_setup(p, mode):
 
 def admm3_setup(p):
   p.sigma, p.mu, p.rho, p.taux, p.tauz = get_method_params()['admm3'][(p.N,p.L,p.M,p.K,p.J,p.SNR)]
+  p.sigma, p.mu, p.rho, p.taux, p.tauz = 6.9e-01, 1.0e-02, 2.0e+00, 1.4e-01, 7.2e-01
   p.maxiter = 1000
 
 def admm1_setup(p):
@@ -429,7 +430,7 @@ def mp_samples(method, Yall, Xall, Zall, p):
   for e in E:
     nsamp = e['ind']
     NMSE[nsamp] = np.linalg.norm(e['Xhat']-Xall[nsamp])**2/np.linalg.norm(Xall[nsamp])**2
-  print(NMSE)
+  # print(NMSE)
   NMSE = 10*np.log10(np.mean(NMSE))
 
   return NMSE
@@ -766,7 +767,7 @@ def main():
 
   # methods = ['admm1','admm3','vampmmse', 'vampista']
   # methods = ['vampista']
-  methods = ['admm1']
+  methods = ['admm3']
   NMSE_L, NMSE_M, NMSE_K = {'var':'L'}, {'var':'M'}, {'var':'K'}
   for method in methods:
     NMSE_L[method], NMSE_M[method], NMSE_K[method] = LMK(method, data)
