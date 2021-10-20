@@ -750,8 +750,8 @@ def roc():
   Nsamp = 100
   Nap = 9
   Yall, Xall, Zall, p = generate_data(Nsamp,L,M,K,'mmwave','cellfree')
-  # methods = ['admm1','vampmmse']
-  methods = ['admm1']
+  methods = ['admm1','vampmmse']
+  # methods = ['admm1']
 
   Dpfa = {}
   Dpmd = {}
