@@ -787,7 +787,7 @@ def regular_detection():
   M = 4
   K = 3
   L = 12
-  Nsamp = 100
+  Nsamp = 1000
   Nap = 9
   Yall, Xall, Zall, p = generate_data(Nsamp,L,M,K,'mmwave')
   methods = ['admm1','vampmmse']
@@ -817,8 +817,8 @@ def regular_detection():
     # [print(p), print(',') for p in Pfa]
     # [print(p), print(',') for p in Pmd]
       # print(tt)
-      # plt.plot(np.log10(Pfa),np.log10(Pmd))
-      # plt.show()
+    # plt.plot(np.log10(Dpfa[method]), np.log10(Dpmd[method]))
+  # plt.show()
     # set_trace()
 
 def computeNMSE(E, Xall):
