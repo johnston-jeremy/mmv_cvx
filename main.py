@@ -744,10 +744,10 @@ def lams_experiment():
   # print(NMSE)
 
 def roc():
-  M = 8
-  K = 8
+  M = 4
+  K = 3
   L = 12
-  Nsamp = 100
+  Nsamp = 1000
   Yall, Xall, Zall, p = generate_data(Nsamp,L,M,K,'mmwave','cellfree')
   # methods = ['admm1','vampmmse']
   methods = ['admm1']
