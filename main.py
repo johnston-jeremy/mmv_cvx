@@ -747,7 +747,8 @@ def roc():
   M = 4
   K = 3
   L = 12
-  Nsamp = 1000
+  Nsamp = 100
+  Nap = 9
   Yall, Xall, Zall, p = generate_data(Nsamp,L,M,K,'mmwave','cellfree')
   # methods = ['admm1','vampmmse']
   methods = ['admm1']
@@ -760,11 +761,13 @@ def roc():
     Pmd = 0
     # for nsamp in range(Nsamp):
       # Y,X,Z = Yall[nsamp], Xall[nsamp], Zall[nsamp]
-     
     E_sorted = sorted([(e['ind'][0],e['ind'][1],e['Xhat']) for e in E], key=lambda tup: tup[0])
-    pfa, pmd, tt = detect_AP([e[2] for e in E_sorted], [Xall[e[0],e[1]] for e in E_sorted])
-    Pfa += pfa/Nsamp
-    Pmd += pmd/Nsamp
+
+    for i in range(Nsamp):
+      Ei = E_sorted[i*Nap:(i+1)*Nap]
+      pfa, pmd, tt = detect_AP([e[2] for e in Ei], [Xall[e[0],e[1]] for e in Ei])
+      Pfa += pfa/Nsamp
+      Pmd += pmd/Nsamp
     
     Dpfa[method] = Pfa
     Dpmd[method] = Pmd
