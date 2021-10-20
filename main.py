@@ -812,8 +812,10 @@ def regular_detection():
     Dpmd[method] = Pmd
   for method in methods:
     print(method)
-    print('pfa = [' + ', '.join('{:.2e}'.format(p) for p in Dpfa[method]) + ']')
-    print('pmd = [' + ', '.join('{:.2e}'.format(p) for p in Dpmd[method]) + ']')
+    print('pfa =')
+    print('[' + ', '.join('{:.2e}'.format(p) for p in Dpfa[method]) + ']')
+    print('pmd =')
+    print('[' + ', '.join('{:.2e}'.format(p) for p in Dpmd[method]) + ']')
     # [print(p), print(',') for p in Pfa]
     # [print(p), print(',') for p in Pmd]
       # print(tt)
@@ -899,5 +901,5 @@ def plotroc():
   plt.show()
 if __name__ == '__main__':
   # main()
-  regular_detection()
-  # plotroc()
+  # regular_detection()
+  plotroc()
