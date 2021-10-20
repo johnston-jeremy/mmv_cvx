@@ -24,7 +24,7 @@ def detect_AP(Xhat,Xtrue):
   # Xhat and Xtrue are lists of matrices
 
   N = Xhat[0].shape[0]
-  Nsamp = len(Xhat)
+  Nap = len(Xhat)
   Pfa = []
   Pmd = []
 
@@ -34,7 +34,7 @@ def detect_AP(Xhat,Xtrue):
   temp = la.norm(Xhat[0],axis=1)
   true = (la.norm(Xtrue[0],axis=1) > 0).astype(int)
   Nt = sum(true)
-  tt = np.logspace(np.log10(0.1),np.log10(.8),Nthresh)*np.max(temp)
+  tt = np.logspace(np.log10(0.01),np.log10(.8),Nthresh)*np.max(temp)
   for xhat in Xhat:
     temp = la.norm(xhat,axis=1)
     
@@ -44,7 +44,7 @@ def detect_AP(Xhat,Xtrue):
 
   # gather and majority vote
   for i in range(len(tt)):
-    pred[i] = (pred[i]/Nsamp > 0.5).astype(int)
+    pred[i] = (pred[i]/Nap > 0.5).astype(int)
     # set_trace()
     Pfa.append(sum((pred[i] - true) > 0)/(N-Nt))
     Pmd.append(sum((true - pred[i]) > 0)/Nt)

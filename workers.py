@@ -80,19 +80,22 @@ def worker_omp(inputs):
   E.append({'Xhat':X, 'ind':ind})
 
 def worker_vamp(inputs):
-  E, prob, Y, nsamp = inputs
+  E, prob, Yall, ind = inputs
+  Y = Yall[ind]
   X = vamp(Y, prob)
-  E.append({'Xhat':X, 'ind':nsamp})
+  E.append({'Xhat':X, 'ind':ind})
 
 def worker_admm3(inputs):
-  E, prob, Y, nsamp = inputs
+  E, prob, Yall, ind = inputs
+  Y = Yall[ind]
   X = admm_problem3(Y, prob)
-  E.append({'Xhat':X, 'ind':nsamp})
+  E.append({'Xhat':X, 'ind':ind})
 
 def worker_admm1(inputs):
-  E, prob, Y, nsamp = inputs
+  E, prob, Yall, ind = inputs
+  Y = Yall[ind]
   X = admm_problem1(Y, prob)
-  E.append({'Xhat':X, 'ind':nsamp})
+  E.append({'Xhat':X, 'ind':ind})
 
 def worker_mfocuss(inputs):
   E, prob, Yall, Xall,lams1,lams2, ind = inputs

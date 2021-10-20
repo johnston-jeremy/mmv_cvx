@@ -377,7 +377,7 @@ def admm1_setup(p):
   p.mu, p.beta, p.taux, p.gamma = 0.22815461799515804, 0.22815461799515804, 0.007790450939353023, 0.3320413925317422,
   p.maxiter = 1000
 
-def mp_samples(method, Yall, Xall, Zall, p):
+def mp_samples(method, Yall, Xall, Zall, p, mode):
   print(method)
 
   p.tol = 1e-6
@@ -391,8 +391,14 @@ def mp_samples(method, Yall, Xall, Zall, p):
   # Xall = Xtest[0] + 1j*Xtest[1]
 
   Nsamp = Xall.shape[0]
-  ind = range(Nsamp)
-
+  if mode == 'regular':
+    ind = range(Nsamp)
+  elif mode == 'cellfree':
+    ind = []
+    Nap = Xall.shape[1]
+    for i in range(Nsamp):
+      for j in range(Nap):
+        ind.append((i,j))
   
   if method == 'cvx':
     worker_handle = worker
@@ -421,20 +427,15 @@ def mp_samples(method, Yall, Xall, Zall, p):
   if method == 'oracle':
     inputs = list(zip([E]*Nworker, [p]*Nworker, [Yall]*Nworker, [Xall]*Nworker, [Zall]*Nworker, ind))
   else:
-    inputs = list(zip([E]*Nworker, [p]*Nworker, Yall, ind))
+    inputs = list(zip([E]*Nworker, [p]*Nworker, [Yall]*Nworker, ind))
 
   with Pool() as pool:
     for _ in tqdm.tqdm(pool.imap_unordered(worker_handle, inputs), total=len(inputs)):
         pass
 
-  NMSE = np.zeros((Nsamp,))
-  for e in E:
-    nsamp = e['ind']
-    NMSE[nsamp] = np.linalg.norm(e['Xhat']-Xall[nsamp])**2/np.linalg.norm(Xall[nsamp])**2
-  # print(NMSE)
-  NMSE = 10*np.log10(np.mean(NMSE))
+  
 
-  return NMSE, E
+  return E
 
 def mp_jobs(L,M,K,method):
   print(L,M,K,method)
@@ -603,7 +604,8 @@ def LMK(method, data, *args):
   NMSE_L = []
   for L in Llist:
     Yall, Xall, Zall, p = data[(L,M,K)]
-    NMSE, _ = mp_samples(method, Yall, Xall, Zall, p)
+    E = mp_samples(method, Yall, Xall, Zall, p, 'regular')
+    NMSE = computeNMSE(E,Xall)
     print(NMSE)
     NMSE_L.append(NMSE)
   
@@ -613,7 +615,8 @@ def LMK(method, data, *args):
  
   for M in Mlist:
     Yall, Xall, Zall, p = data[(L,M,K)]
-    NMSE, _ = mp_samples(method, Yall, Xall, Zall, p)
+    E = mp_samples(method, Yall, Xall, Zall, p, 'regular')
+    NMSE = computeNMSE(E,Xall)
     print(NMSE)
     NMSE_M.append(NMSE)
 
@@ -622,7 +625,8 @@ def LMK(method, data, *args):
   NMSE_K = []
   for K in Klist:
     Yall, Xall, Zall, p = data[(L,M,K)]
-    NMSE, _ = mp_samples(method, Yall, Xall, Zall, p)
+    E = mp_samples(method, Yall, Xall, Zall, p, 'regular')
+    NMSE = computeNMSE(E,Xall)
     print(NMSE)
     NMSE_K.append(NMSE)
 
@@ -751,22 +755,23 @@ def roc():
   Dpfa = {}
   Dpmd = {}
   for method in methods:
+    E = mp_samples(method, Yall, Xall, Zall, p, 'cellfree')
     Pfa = 0
     Pmd = 0
-    for nsamp in range(Nsamp):
-      Y,X,Z = Yall[nsamp], Xall[nsamp], Zall[nsamp]
-      _, E = mp_samples(method, Y, X, Z, p)
+    # for nsamp in range(Nsamp):
+      # Y,X,Z = Yall[nsamp], Xall[nsamp], Zall[nsamp]
      
-      pfa, pmd, tt = detect_AP([e['Xhat'] for e in E], [X[e['ind']] for e in E])
-      Pfa += pfa/Nsamp
-      Pmd += pmd/Nsamp
+    E_sorted = sorted([(e['ind'][0],e['ind'][1],e['Xhat']) for e in E], key=lambda tup: tup[0])
+    pfa, pmd, tt = detect_AP([e[2] for e in E_sorted], [Xall[e[0],e[1]] for e in E_sorted])
+    Pfa += pfa/Nsamp
+    Pmd += pmd/Nsamp
     
     Dpfa[method] = Pfa
     Dpmd[method] = Pmd
   for method in methods:
     print(method)
-    print('[' + ','.join('{:.2e}'.format(p) for p in Dpfa[method]) + ']')
-    print('[' + ','.join('{:.2e}'.format(p) for p in Dpmd[method]) + ']')
+    print('[' + ', '.join('{:.2e}'.format(p) for p in Dpfa[method]) + ']')
+    print('[' + ', '.join('{:.2e}'.format(p) for p in Dpmd[method]) + ']')
     # [print(p), print(',') for p in Pfa]
     # [print(p), print(',') for p in Pmd]
       # print(tt)
@@ -774,8 +779,18 @@ def roc():
       # plt.show()
     # set_trace()
 
+def computeNMSE(E, Xall):
+  Nsamp = Xall.shape[0]
+  NMSE = np.zeros((Nsamp,))
+  for e in E:
+    nsamp = e['ind']
+    NMSE[nsamp] = np.linalg.norm(e['Xhat']-Xall[nsamp])**2/np.linalg.norm(Xall[nsamp])**2
+  # print(NMSE)
+  NMSE = 10*np.log10(np.mean(NMSE))
+  return NMSE
+
 def main():
-  Nsamp = 100
+  Nsamp = 2
 
   data = {}
   # lam_tradeoff('cvx','L', 'M', 'K')
