@@ -747,7 +747,7 @@ def roc():
   M = 4
   K = 3
   L = 12
-  Nsamp = 100
+  Nsamp = 1
   Nap = 9
   Yall, Xall, Zall, p = generate_data(Nsamp,L,M,K,'mmwave','cellfree')
   # methods = ['admm1','vampmmse']

@@ -1,3 +1,4 @@
+from pdb import set_trace
 import numpy as np
 import numpy.linalg as la
 
@@ -35,6 +36,7 @@ def detect_AP(Xhat,Xtrue):
   true = (la.norm(Xtrue[0],axis=1) > 0).astype(int)
   Nt = sum(true)
   tt = np.logspace(np.log10(0.01),np.log10(1.5),Nthresh)
+  set_trace()
   for xhat in Xhat:
     temp = la.norm(xhat,axis=1)
     
