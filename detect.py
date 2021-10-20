@@ -19,7 +19,8 @@ def detect(Xhat,Xtrue):
       import pdb
       pdb.set_trace()
 
-  return Pfa, Pmd, tt
+  return np.array(Pfa), np.array(Pmd), tt
+
 
 def detect_AP(Xhat,Xtrue):
   # Xhat and Xtrue are lists of matrices
