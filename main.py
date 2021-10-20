@@ -744,8 +744,8 @@ def lams_experiment():
   # print(NMSE)
 
 def roc():
-  M = 4
-  K = 3
+  M = 8
+  K = 8
   L = 12
   Nsamp = 100
   Nap = 9
