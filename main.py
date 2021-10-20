@@ -755,11 +755,11 @@ def roc():
       _, E = mp_samples(method, Y, X, Z, p)
      
       pfa, pmd, tt = detect_AP([e['Xhat'] for e in E], [X[e['ind']] for e in E])
-      Pfa += pfa
-      Pmd += pmd
+      Pfa += pfa/Nsamp
+      Pmd += pmd/Nsamp
       
-    print(Pfa/Nsamp)
-    print(Pmd/Nsamp)
+    print([str(p)+',' for p in Pfa])
+    print([str(p)+',' for p in Pmd])
       # print(tt)
       # plt.plot(np.log10(Pfa),np.log10(Pmd))
       # plt.show()
@@ -810,6 +810,8 @@ def main():
       print(method, n[method])
     
 
+def plotroc():
+  pfa = 
 if __name__ == '__main__':
   # main()
   roc()
