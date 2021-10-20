@@ -35,14 +35,14 @@ def detect_AP(Xhat,Xtrue):
   temp = la.norm(Xhat[0],axis=1)
   true = (la.norm(Xtrue[0],axis=1) > 0).astype(int)
   Nt = sum(true)
-  tt = np.logspace(np.log10(0.01),np.log10(1),Nthresh)
+  tt = np.logspace(np.log10(0.01),np.log10(2),Nthresh)
   # print([max(la.norm(Xhat[i],axis=1)) for i in range(Nap)])
   # set_trace()
   for xhat in Xhat:
     temp = la.norm(xhat,axis=1)
     # detect
     for i in range(len(tt)):
-      pred[i] += (temp > tt[i]*np.max(temp)).astype(int)
+      pred[i] += (temp > tt[i]).astype(int)
 
   # gather and majority vote
   for i in range(len(tt)):
