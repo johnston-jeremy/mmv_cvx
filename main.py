@@ -743,10 +743,12 @@ def roc():
   M = 8
   K = 8
   L = 12
-  Nsamp = 20
+  Nsamp = 1
   Yall, Xall, Zall, p = generate_data(Nsamp,L,M,K,'mmwave','cellfree')
   methods = ['admm1','vampmmse']
 
+  Dpfa = {}
+  Dpmd = {}
   for method in methods:
     Pfa = 0
     Pmd = 0
@@ -757,13 +759,19 @@ def roc():
       pfa, pmd, tt = detect_AP([e['Xhat'] for e in E], [X[e['ind']] for e in E])
       Pfa += pfa/Nsamp
       Pmd += pmd/Nsamp
-      
-    print([str(p)+',' for p in Pfa])
-    print([str(p)+',' for p in Pmd])
+    
+    Dpfa[method] = Pfa
+    Dpmd[method] = Pmd
+  for method in methods:
+    print(method)
+    print('[' + ','.join('{:.2e}'.format(p) for p in Dpfa[method]) + ']')
+    print('[' + ','.join('{:.2e}'.format(p) for p in Dpmd[method]) + ']')
+    # [print(p), print(',') for p in Pfa]
+    # [print(p), print(',') for p in Pmd]
       # print(tt)
       # plt.plot(np.log10(Pfa),np.log10(Pmd))
       # plt.show()
-    set_trace()
+    # set_trace()
 
 def main():
   Nsamp = 100
@@ -799,7 +807,8 @@ def main():
 
   # methods = ['admm1','admm3','vampmmse', 'vampista']
   # methods = ['vampista']
-  methods = ['admm1','vampmmse']
+  # methods = ['admm1','vampmmse']
+  methods = ['admm1']
   NMSE_L, NMSE_M, NMSE_K = {'var':'L'}, {'var':'M'}, {'var':'K'}
   for method in methods:
     NMSE_L[method], NMSE_M[method], NMSE_K[method] = LMK(method, data)
