@@ -8,7 +8,7 @@ def detect(Xhat,Xtrue):
   Pmd = []
   # set_trace()
   temp = la.norm(Xhat,axis=1)
-  tt = np.logspace(np.log10(0.001),np.log10(1),30)*np.max(temp)
+  tt = np.logspace(np.log10(0.00001),np.log10(1),30)*np.max(temp)
   true = (la.norm(Xtrue,axis=1) > 0).astype(int)
   Nt = sum(true)
   for t in tt:
