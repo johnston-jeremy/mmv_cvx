@@ -810,8 +810,8 @@ def main():
       print(method, n[method])
     
 
-def plotroc():
-  pfa = 
+# def plotroc():
+#   pfa = 
 if __name__ == '__main__':
   # main()
   roc()
