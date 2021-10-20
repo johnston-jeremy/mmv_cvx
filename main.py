@@ -784,8 +784,8 @@ def cellfree_detection():
     # set_trace()
 
 def regular_detection():
-  M = 8
-  K = 8
+  M = 4
+  K = 3
   L = 12
   Nsamp = 100
   Nap = 9
