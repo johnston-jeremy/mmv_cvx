@@ -811,11 +811,12 @@ def regular_detection():
     Dpfa[method] = Pfa
     Dpmd[method] = Pmd
   for method in methods:
-    print(method)
+    # print(method)
     print('pfa = [')
     print(', '.join('{:.2e}'.format(p) for p in Dpfa[method]) + ']')
     print('pmd = [')
     print(', '.join('{:.2e}'.format(p) for p in Dpmd[method]) + ']')
+    print('plt.plot(np.log10(pfa),np.log10(pmd))')
     # [print(p), print(',') for p in Pfa]
     # [print(p), print(',') for p in Pmd]
       # print(tt)
