@@ -29,7 +29,7 @@ def detect_AP(Xhat,Xtrue):
   Pfa = []
   Pmd = []
 
-  Nthresh = 50
+  Nthresh = 30
   pred = [0]*Nthresh
 
   temp = la.norm(Xhat[0],axis=1)
