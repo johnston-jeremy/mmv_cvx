@@ -922,5 +922,5 @@ def plotroc():
   plt.show()
 if __name__ == '__main__':
   # main()
-  # regular_detection()
-  plotroc()
+  regular_detection()
+  # plotroc()
