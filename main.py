@@ -374,7 +374,7 @@ def admm3_setup(p):
 
 def admm1_setup(p):
   p.mu, p.beta, p.taux, p.gamma = get_method_params()['admm1'][(p.N,p.L,p.M,p.K,p.J,p.SNR)]
-  p.mu, p.beta, p.taux, p.gamma = 0.22815461799515804, 0.22815461799515804, 0.007790450939353023, 0.3320413925317422,
+  # p.mu, p.beta, p.taux, p.gamma = 0.22815461799515804, 0.22815461799515804, 0.007790450939353023, 0.3320413925317422,
   p.maxiter = 1000
 
 def mp_samples(method, Yall, Xall, Zall, p, mode):
@@ -648,6 +648,61 @@ def LMK(method, data, *args):
     plt.show()
   return NMSE_L, NMSE_M, NMSE_K
 
+def LMK_nets(method, data, *args):
+  
+  Llist = data['Llist']
+  Mlist = data['Mlist']
+  Klist = data['Klist']
+  
+  M = 8
+  K = 3
+  NMSE_L = []
+  for L in Llist:
+    Yall, Xall, Zall, p = data[(L,M,K)]
+    E = mp_samples(method, Yall, Xall, Zall, p, 'regular')
+    NMSE = computeNMSE(E,Xall)
+    print(NMSE)
+    NMSE_L.append(NMSE)
+  
+  L = 12
+  K = 3
+  NMSE_M = []
+ 
+  for M in Mlist:
+    Yall, Xall, Zall, p = data[(L,M,K)]
+    E = mp_samples(method, Yall, Xall, Zall, p, 'regular')
+    NMSE = computeNMSE(E,Xall)
+    print(NMSE)
+    NMSE_M.append(NMSE)
+
+  M = 8
+  L = 12
+  NMSE_K = []
+  for K in Klist:
+    Yall, Xall, Zall, p = data[(L,M,K)]
+    E = mp_samples(method, Yall, Xall, Zall, p, 'regular')
+    NMSE = computeNMSE(E,Xall)
+    print(NMSE)
+    NMSE_K.append(NMSE)
+
+  if len(NMSE_L) > 0: print('L', NMSE_L)
+  if len(NMSE_M) > 0: print('M', NMSE_M)
+  if len(NMSE_K) > 0: print('K', NMSE_K)
+  
+  if 'plot' in args:
+    if len(NMSE_L) > 0: 
+      figL, axL = plt.subplots()
+      axL.plot(Llist, NMSE_L)
+    if len(NMSE_M) > 0: 
+      figM, axM = plt.subplots()
+      axM.plot(Mlist, NMSE_M)
+    if len(NMSE_K) > 0: 
+      figK, axK = plt.subplots()
+      axK.plot(Klist, NMSE_K)
+
+    plt.show()
+  return NMSE_L, NMSE_M, NMSE_K
+
 def LMK_jobs(method, *args):
   M = 8
   K = 3
@@ -699,6 +754,9 @@ def generate_data(Nsamp,L,M,K,mode,*args):
   J = 2
   SNR = 10
   p = problem(*(N,L,M,P,K,(M,1),J,SNR))
+
+  A = np.load('./Aall.npy', allow_pickle=True).tolist()
+  p.A = A[(L,M,K)]
 
 
   if 'cellfree' in args:
@@ -835,7 +893,7 @@ def computeNMSE(E, Xall):
   return NMSE
 
 def main():
-  Nsamp = 2
+  Nsamp = 100
 
   data = {}
   # lam_tradeoff('cvx','L', 'M', 'K')
@@ -866,13 +924,14 @@ def main():
   data['Mlist'] = Mlist
   data['Klist'] = Klist
 
-  # methods = ['admm1','admm3','vampmmse', 'vampista']
+  methods = ['admm1','admm3','vampmmse', 'vampista']
   # methods = ['vampista']
-  methods = ['admm1','vampmmse']
+  # methods = ['admm1','vampmmse']
   NMSE_L, NMSE_M, NMSE_K = {'var':'L'}, {'var':'M'}, {'var':'K'}
   for method in methods:
     NMSE_L[method], NMSE_M[method], NMSE_K[method] = LMK(method, data)
 
+  # for net in net
   for n in [NMSE_L, NMSE_M, NMSE_K]:
     print(n['var'])
     for method in methods:
@@ -881,5 +940,5 @@ def main():
 
 
 if __name__ == '__main__':
-  # main()
-  regular_detection()
+  main()
+  # regular_detection()
