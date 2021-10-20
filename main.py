@@ -743,7 +743,7 @@ def lams_experiment():
 
   # print(NMSE)
 
-def roc():
+def cellfree_detection():
   M = 8
   K = 8
   L = 12
@@ -767,6 +767,44 @@ def roc():
     for i in range(Nsamp):
       Ei = E_sorted[i*Nap:(i+1)*Nap]
       pfa, pmd, tt = detect_AP([e[2] for e in Ei], [Xall[e[0],e[1]] for e in Ei])
+      Pfa += pfa/Nsamp
+      Pmd += pmd/Nsamp
+    
+    Dpfa[method] = Pfa
+    Dpmd[method] = Pmd
+  for method in methods:
+    print(method)
+    print('[' + ', '.join('{:.2e}'.format(p) for p in Dpfa[method]) + ']')
+    print('[' + ', '.join('{:.2e}'.format(p) for p in Dpmd[method]) + ']')
+    # [print(p), print(',') for p in Pfa]
+    # [print(p), print(',') for p in Pmd]
+      # print(tt)
+      # plt.plot(np.log10(Pfa),np.log10(Pmd))
+      # plt.show()
+    # set_trace()
+
+def regular_detection():
+  M = 8
+  K = 8
+  L = 12
+  Nsamp = 100
+  Nap = 9
+  Yall, Xall, Zall, p = generate_data(Nsamp,L,M,K,'mmwave')
+  methods = ['admm1','vampmmse']
+  # methods = ['admm3','vampista']
+  # methods = ['admm1']
+
+  Dpfa = {}
+  Dpmd = {}
+  for method in methods:
+    E = mp_samples(method, Yall, Xall, Zall, p, 'regular')
+    Pfa = 0
+    Pmd = 0
+    # for nsamp in range(Nsamp):
+      # Y,X,Z = Yall[nsamp], Xall[nsamp], Zall[nsamp]
+
+    for e in E:
+      pfa, pmd, tt = detect(e['Xhat'], Xall[e['ind']])
       Pfa += pfa/Nsamp
       Pmd += pmd/Nsamp
     
@@ -842,4 +880,4 @@ def main():
 #   pfa = 
 if __name__ == '__main__':
   # main()
-  roc()
+  regular_detection()
