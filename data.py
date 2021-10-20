@@ -57,3 +57,30 @@ def gen_c(p,Nsamp,mode):
     Y[j] = np.matmul(A, X[j]) + noise
 
   return Y, X, Z, sigma
+
+def gen_c_cell_free(p,Nsamp,Na,mode):
+  J,N,L,M,Ng,K,SNR = p.J, p.N, p.L, p.M, p.Ng, p.K, p.SNR
+  Phi = p.Phi
+  A = p.A
+
+  Y = np.zeros((Nsamp,Na,L,M),dtype=complex)
+  X = np.zeros((Nsamp,Na,N,M),dtype=complex)
+  Z = np.zeros((Nsamp,Na,N,Ng),dtype=complex)
+  for j in range(Nsamp):
+    ind = np.random.permutation(N)[:K]
+
+    for na in range(Na):
+      if mode == 'mmwave':
+        for i in ind:
+          Z[j,na,i,np.random.permutation(Ng)[:J]] \
+            = np.random.normal(size=(J,)) \
+            + 1j*np.random.normal(size=(J,))
+        X[j,na] = np.matmul(Z[j,na], Phi.T)
+      elif mode =='gaussian':
+        X[j,na,ind] = CN(K,M,1)
+
+      noise, sigma = scaled_noise_c(A,X[j,na],SNR)
+
+      Y[j,na] = np.matmul(A, X[j,na]) + noise
+
+  return Y, X, Z, sigma

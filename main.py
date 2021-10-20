@@ -1,9 +1,10 @@
+from detect import detect, detect_AP
 from vamp import vamp
 import tqdm
 import numpy as np
 import cvxpy as cp
 import matplotlib.pyplot as plt
-from data import gen_c
+from data import gen_c, gen_c_cell_free
 from problem import problem
 from pdb import set_trace
 from multiprocessing import Pool, Manager
@@ -433,7 +434,7 @@ def mp_samples(method, Yall, Xall, Zall, p):
   # print(NMSE)
   NMSE = 10*np.log10(np.mean(NMSE))
 
-  return NMSE
+  return NMSE, E
 
 def mp_jobs(L,M,K,method):
   print(L,M,K,method)
@@ -602,7 +603,7 @@ def LMK(method, data, *args):
   NMSE_L = []
   for L in Llist:
     Yall, Xall, Zall, p = data[(L,M,K)]
-    NMSE = mp_samples(method, Yall, Xall, Zall, p)
+    NMSE, _ = mp_samples(method, Yall, Xall, Zall, p)
     print(NMSE)
     NMSE_L.append(NMSE)
   
@@ -612,7 +613,7 @@ def LMK(method, data, *args):
  
   for M in Mlist:
     Yall, Xall, Zall, p = data[(L,M,K)]
-    NMSE = mp_samples(method, Yall, Xall, Zall, p)
+    NMSE, _ = mp_samples(method, Yall, Xall, Zall, p)
     print(NMSE)
     NMSE_M.append(NMSE)
 
@@ -621,7 +622,7 @@ def LMK(method, data, *args):
   NMSE_K = []
   for K in Klist:
     Yall, Xall, Zall, p = data[(L,M,K)]
-    NMSE = mp_samples(method, Yall, Xall, Zall, p)
+    NMSE, _ = mp_samples(method, Yall, Xall, Zall, p)
     print(NMSE)
     NMSE_K.append(NMSE)
 
@@ -688,14 +689,19 @@ def LMK_jobs(method, *args):
     axK.plot(Klist, NMSE_K)
     plt.show()
 
-def generate_data(Nsamp,L,M,K,mode):
+def generate_data(Nsamp,L,M,K,mode,*args):
   N = 50
   P = 2*M
   J = 2
   SNR = 10
   p = problem(*(N,L,M,P,K,(M,1),J,SNR))
 
-  Yall, Xall, Zall, sigma = gen_c(p, Nsamp, mode)
+
+  if 'cellfree' in args:
+    Na = 9  
+    Yall, Xall, Zall, sigma = gen_c_cell_free(p, Nsamp, Na, mode)
+  else:
+    Yall, Xall, Zall, sigma = gen_c(p, Nsamp, mode)
 
   return Yall, Xall, Zall, p
 
@@ -733,6 +739,32 @@ def lams_experiment():
 
   # print(NMSE)
 
+def roc():
+  M = 8
+  K = 8
+  L = 12
+  Nsamp = 20
+  Yall, Xall, Zall, p = generate_data(Nsamp,L,M,K,'mmwave','cellfree')
+  methods = ['admm1','vampmmse']
+
+  for method in methods:
+    Pfa = 0
+    Pmd = 0
+    for nsamp in range(Nsamp):
+      Y,X,Z = Yall[nsamp], Xall[nsamp], Zall[nsamp]
+      _, E = mp_samples(method, Y, X, Z, p)
+     
+      pfa, pmd, tt = detect_AP([e['Xhat'] for e in E], [X[e['ind']] for e in E])
+      Pfa += pfa
+      Pmd += pmd
+      
+    print(Pfa/Nsamp)
+    print(Pmd/Nsamp)
+      # print(tt)
+      # plt.plot(np.log10(Pfa),np.log10(Pmd))
+      # plt.show()
+    set_trace()
+
 def main():
   Nsamp = 100
 
@@ -767,7 +799,7 @@ def main():
 
   # methods = ['admm1','admm3','vampmmse', 'vampista']
   # methods = ['vampista']
-  methods = ['admm3']
+  methods = ['admm1','vampmmse']
   NMSE_L, NMSE_M, NMSE_K = {'var':'L'}, {'var':'M'}, {'var':'K'}
   for method in methods:
     NMSE_L[method], NMSE_M[method], NMSE_K[method] = LMK(method, data)
@@ -779,4 +811,5 @@ def main():
     
 
 if __name__ == '__main__':
-  main()
+  # main()
+  roc()
