@@ -34,7 +34,7 @@ def detect_AP(Xhat,Xtrue):
   temp = la.norm(Xhat[0],axis=1)
   true = (la.norm(Xtrue[0],axis=1) > 0).astype(int)
   Nt = sum(true)
-  tt = np.logspace(np.log10(0.01),np.log10(1),Nthresh)*np.max(temp)
+  tt = np.logspace(np.log10(0.1),np.log10(.8),Nthresh)*np.max(temp)
   for xhat in Xhat:
     temp = la.norm(xhat,axis=1)
     
