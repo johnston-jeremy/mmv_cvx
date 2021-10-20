@@ -743,9 +743,10 @@ def roc():
   M = 8
   K = 8
   L = 12
-  Nsamp = 1
+  Nsamp = 10
   Yall, Xall, Zall, p = generate_data(Nsamp,L,M,K,'mmwave','cellfree')
-  methods = ['admm1','vampmmse']
+  # methods = ['admm1','vampmmse']
+  methods = ['admm1']
 
   Dpfa = {}
   Dpmd = {}
@@ -807,8 +808,7 @@ def main():
 
   # methods = ['admm1','admm3','vampmmse', 'vampista']
   # methods = ['vampista']
-  # methods = ['admm1','vampmmse']
-  methods = ['admm1']
+  methods = ['admm1','vampmmse']
   NMSE_L, NMSE_M, NMSE_K = {'var':'L'}, {'var':'M'}, {'var':'K'}
   for method in methods:
     NMSE_L[method], NMSE_M[method], NMSE_K[method] = LMK(method, data)
